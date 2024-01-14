@@ -1,5 +1,7 @@
 import math
 
+from wpimath.geometry import Transform3d, Rotation3d
+
 from swervepy import u
 
 
@@ -10,6 +12,8 @@ class Physical:
 
     MAX_SPEED = 4.5 * u.m / u.s
     MAX_ANGULAR_SPEED = 11.5 * u.rad / u.s
+
+    ROBOT_TO_CAMERA_TRANSFORMATION = Transform3d(0, 0, 0, Rotation3d(0, 0, 0))
 
 
 class Mechanical:
@@ -78,6 +82,10 @@ class Software:
 
     # PID constants for drivetrain following positions
     ANGULAR_POSITION_kP = 1  # Rad/s per radian of error
+
+
+class Coprocessor:
+    CAMERA_NAME = "Arducam_OV9782_USB_Camera"
 
 
 class Operation:
