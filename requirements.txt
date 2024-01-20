@@ -1,0 +1,4 @@
+robotpy[phoenix5,rev,pathplannerlib]<2025,>=2024.1.1.2
+robotpy-commands-v2==2024.0.0b4
+photonlibpy<2025,>=2024.2.0
+Pint
