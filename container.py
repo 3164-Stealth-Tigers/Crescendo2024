@@ -1,6 +1,7 @@
 ﻿import commands2
 import wpilib
 
+import vision
 from config import swerve_components
 from config.constants import Operation, Physical, Software
 from swervepy import SwerveDrive
@@ -16,7 +17,11 @@ class RobotContainer:
 
         # Construct the swerve drivetrain
         self.swerve = SwerveDrive(
-            swerve_components.MODULES, swerve_components.GYRO, Physical.MAX_SPEED, Physical.MAX_ANGULAR_SPEED
+            swerve_components.MODULES,
+            swerve_components.GYRO,
+            Physical.MAX_SPEED,
+            Physical.MAX_ANGULAR_SPEED,
+            vision.get_estimated_global_pose_2d,
         )
 
         self.teleop_command = self.swerve.teleop_command(
