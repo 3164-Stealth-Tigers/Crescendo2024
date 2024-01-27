@@ -35,7 +35,7 @@ DRIVE_COMPONENT_PARAMS = DRIVE_COMPONENT_CLASS.Parameters(
     invert_motor=Mechanical.DRIVE_MOTOR_INVERTED,
 )
 STEERING_COMPONENT_PARAMS = STEERING_COMPONENT_CLASS.Parameters(
-    gear_ratio=Mechanical.DRIVE_GEAR_RATIO,
+    gear_ratio=Mechanical.STEERING_GEAR_RATIO,
     max_angular_velocity=Physical.MAX_ANGULAR_SPEED,
     ramp_rate=0,
     continuous_current_limit=Electrical.STEERING_CONTINUOUS_CURRENT_LIMIT,

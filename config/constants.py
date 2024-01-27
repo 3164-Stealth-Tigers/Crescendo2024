@@ -1,13 +1,15 @@
+# TODO: Update drivetrain constants for new robot once electrical and mechanical are done with it
+
 import math
 
-from wpimath.geometry import Transform3d, Rotation3d, Pose2d, Transform2d, Translation2d
+from wpimath.geometry import Transform3d, Rotation3d, Translation2d
 
 from swervepy import u
 
 
 class Physical:
-    TRACK_WIDTH = 21.73 * u.inch
-    WHEEL_BASE = 21.73 * u.inch
+    TRACK_WIDTH = 24.75 * u.inch
+    WHEEL_BASE = 24.75 * u.inch
     WHEEL_CIRCUMFERENCE = 4 * math.pi * u.inch
 
     MAX_SPEED = 4.5 * u.m / u.s
