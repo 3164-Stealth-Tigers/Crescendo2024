@@ -4,6 +4,7 @@ import commands2
 import wpilib
 from commands2.sysid import SysIdRoutine
 
+import vision
 from config import swerve_components
 from config.constants import Operation, Physical, Software, Field
 from swervepy import SwerveDrive
@@ -26,7 +27,11 @@ class RobotContainer:
 
         # Construct the swerve drivetrain
         self.swerve = SwerveDrive(
-            swerve_components.MODULES, swerve_components.GYRO, Physical.MAX_SPEED, Physical.MAX_ANGULAR_SPEED
+            swerve_components.MODULES,
+            swerve_components.GYRO,
+            Physical.MAX_SPEED,
+            Physical.MAX_ANGULAR_SPEED,
+            vision.get_estimated_global_pose_2d,
         )
 
         # Experimental: Set a default callback for rotation so that we can change it to something else
