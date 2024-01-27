@@ -12,8 +12,7 @@ Any special logic (e.g. inverting the Y axis on a joystick) is also defined in a
 from typing import Protocol
 from abc import abstractmethod
 
-from commands2 import Trigger
-from commands2.button import CommandXboxController, CommandJoystick, CommandPS4Controller
+from commands2.button import CommandXboxController, CommandJoystick, CommandPS4Controller, Trigger
 
 
 # Action Sets
