@@ -13,7 +13,7 @@ from typing import Protocol
 from abc import abstractmethod
 
 from commands2 import Trigger
-from commands2.button import CommandXboxController, CommandJoystick
+from commands2.button import CommandXboxController, CommandJoystick, CommandPS4Controller
 
 
 # Action Sets
@@ -53,8 +53,14 @@ class DriverActionSet(Protocol):
         raise NotImplementedError
 
     @abstractmethod
-    def is_movement_commanded(self):
+    def is_movement_commanded(self) -> bool:
         """Return True if drive base movement is desired"""
+        raise NotImplementedError
+
+    @property
+    @abstractmethod
+    def look_at_speaker(self) -> Trigger:
+        """Hold to continuously rotate the robot to loot at the speaker"""
         raise NotImplementedError
 
 
@@ -91,7 +97,7 @@ class XboxDriver(DriverActionSet):
 
     @property
     def toggle_field_relative(self) -> Trigger:
-        return self.stick.back()  # PS4 Button 9
+        return self.stick.back()
 
     @property
     def ski_stop(self) -> Trigger:
@@ -99,6 +105,10 @@ class XboxDriver(DriverActionSet):
 
     def is_movement_commanded(self):
         return self.forward() + self.strafe() + self.turn() != 0
+
+    @property
+    def look_at_speaker(self) -> Trigger:
+        return self.stick.x()
 
 
 class T16000M(DriverActionSet):
@@ -136,6 +146,54 @@ class T16000M(DriverActionSet):
 
     def is_movement_commanded(self):
         return self.forward() + self.strafe() + self.turn() != 0
+
+    def look_at_speaker(self) -> Trigger:
+        # TODO: Impl look_at_speaker on T16000M
+        return Trigger()
+
+
+class PS4Driver(DriverActionSet):
+    """Drive the robot with an PS4 controller"""
+
+    def __init__(self, port: int):
+        """Construct a PS4Driver
+
+        :param port: The port that the joystick is plugged into. Reported on the Driver Station
+        """
+        self.stick = CommandPS4Controller(port)
+
+    def forward(self) -> float:
+        """The robot's movement along the X axis, controlled by moving the left joystick up and down. From -1 to 1"""
+        return deadband(-self.stick.getLeftY(), 0.08)
+
+    def strafe(self) -> float:
+        """The robot's movement along the Y axis, controlled by moving the left joystick left and right. From -1 to 1"""
+        return deadband(-self.stick.getLeftX(), 0.08)
+
+    def turn(self) -> float:
+        """The robot's movement around the Z axis, controlled by moving the right joystick left and right.
+        From -1 to 1, CCW+
+        """
+        return deadband(-self.stick.getRightX(), 0.08) * 0.6
+
+    @property
+    def reset_gyro(self) -> Trigger:
+        return self.stick.options()
+
+    @property
+    def toggle_field_relative(self) -> Trigger:
+        return self.stick.share()
+
+    @property
+    def ski_stop(self) -> Trigger:
+        return self.stick.triangle()
+
+    def is_movement_commanded(self):
+        return self.forward() + self.strafe() + self.turn() != 0
+
+    @property
+    def look_at_speaker(self) -> Trigger:
+        return self.stick.square()
 
 
 def deadband(value, band):

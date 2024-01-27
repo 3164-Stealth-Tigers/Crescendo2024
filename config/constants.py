@@ -1,6 +1,6 @@
 import math
 
-from wpimath.geometry import Transform3d, Rotation3d
+from wpimath.geometry import Transform3d, Rotation3d, Pose2d, Transform2d, Translation2d
 
 from swervepy import u
 
@@ -90,3 +90,10 @@ class Coprocessor:
 
 class Operation:
     DRIVER_JOYSTICK_ID = 0
+    TEST_JOYSTICK_ID = 2
+
+
+class Field:
+    # Unless otherwise specified, all positions/poses are global (i.e., relative to the blue alliance origin)
+    BLUE_SPEAKER_POSITION = Translation2d(0, 5.5462)
+    RED_SPEAKER_POSITION = Translation2d(16.5252, 5.5462)
