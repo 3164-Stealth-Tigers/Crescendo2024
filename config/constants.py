@@ -4,7 +4,7 @@ import math
 
 from wpimath.geometry import Transform3d, Rotation3d, Translation2d
 
-from swervepy import u
+from swervepy import u, TrajectoryFollowerParameters
 
 
 class Physical:
@@ -22,7 +22,7 @@ class Mechanical:
     DRIVE_GEAR_RATIO = 6.75  # SDS Mk4i L2
     STEERING_GEAR_RATIO = 150 / 7  # SDS Mk4i
 
-    DRIVE_MOTOR_INVERTED = False
+    DRIVE_MOTOR_INVERTED = True
     STEERING_MOTOR_INVERTED = True
     GYRO_INVERTED = False
 
@@ -38,10 +38,10 @@ class Electrical:
     DRIVE_CLOSED_LOOP_RAMP_RATE = 0
 
     # Swerve module absolute encoder offsets (in degrees)
-    FL_ENCODER_OFFSET = 107.226562
-    FR_ENCODER_OFFSET = 160.136719
-    BL_ENCODER_OFFSET = 307.089844
-    BR_ENCODER_OFFSET = 355.693359
+    FL_ENCODER_OFFSET = 345.234375
+    FR_ENCODER_OFFSET = 333.105469
+    BL_ENCODER_OFFSET = 131.572266
+    BR_ENCODER_OFFSET = 165.322266
 
     FL_DRIVE_ID = 1
     FL_STEERING_ID = 2
@@ -84,6 +84,13 @@ class Software:
 
     # PID constants for drivetrain following positions
     ANGULAR_POSITION_kP = 1  # Rad/s per radian of error
+    LINEAR_POSITION_kP = 1  # m/s per metre of error
+
+    TRAJECTORY_PARAMS = TrajectoryFollowerParameters(
+        Physical.MAX_SPEED,
+        ANGULAR_POSITION_kP,
+        LINEAR_POSITION_kP,
+    )
 
 
 class Coprocessor:

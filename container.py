@@ -2,6 +2,7 @@
 
 import commands2
 import wpilib
+import pathplannerlib as pp
 from commands2.sysid import SysIdRoutine
 
 import vision
@@ -56,7 +57,12 @@ class RobotContainer:
         self.configure_button_bindings()
 
     def get_autonomous_command(self):
-        return commands2.PrintCommand("Autonomous not implemented!")
+        return self.swerve.follow_trajectory_command(
+            pp.path.PathPlannerPath.fromPathFile("Drive Forward"),
+            Software.TRAJECTORY_PARAMS,
+            True,
+            True,
+        )
 
     def configure_button_bindings(self):
         """Bind buttons on the Xbox controllers to run Commands"""
