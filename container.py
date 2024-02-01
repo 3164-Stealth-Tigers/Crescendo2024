@@ -106,21 +106,23 @@ class RobotContainer:
         # to translate the robot with joysticks while the command is active.
 
         # Locate the correct SPEAKER depending on which alliance we're on
-        if wpilib.DriverStation.getAlliance() is wpilib.DriverStation.Alliance.kBlue:
+        if wpilib.DriverStation.getAlliance() == wpilib.DriverStation.Alliance.kBlue:
             speaker_pos = Field.BLUE_SPEAKER_POSITION
         else:
             speaker_pos = Field.RED_SPEAKER_POSITION
 
         bot_pose = self.swerve.pose
 
-        # Calculate the angle from the robot to the SPEAKER
+        # Calculate the angle from the robot's position to the SPEAKER's position
         dy = speaker_pos.y - bot_pose.y
         dx = speaker_pos.x - bot_pose.x
         theta = math.atan2(dy, dx)
 
         # Calculate the required change in robot heading angle
         theta_error = theta - bot_pose.rotation().radians()
-        print(f"Theta Error: {theta_error}")
+        # Two possible changes in heading angle are possible--find the smaller one
+        theta_error = (theta_error + math.pi) % (2 * math.pi) - math.pi
+        print(f"Theta Error: {theta_error/math.pi:.3f}π")
 
         # Apply a proportional constant to the rotational error, producing a desired angular velocity
         output = Software.ANGULAR_POSITION_kP * theta_error
