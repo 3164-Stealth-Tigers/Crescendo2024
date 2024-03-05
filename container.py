@@ -75,6 +75,10 @@ class RobotContainer:
             commands2.InstantCommand(self.teleop_command.toggle_field_relative)
         )
 
+        self.driver_stick.reset_pose_to_vision.onTrue(
+            commands2.InstantCommand(self.swerve.reset_odometry_to_vision)
+        )
+
         # Point the wheels in an 'X' direction to make the robot harder to push
         # Cancels when the driver starts driving again
         self.driver_stick.ski_stop.onTrue(ski_stop_command(self.swerve).until(self.driver_stick.is_movement_commanded))
@@ -122,7 +126,7 @@ class RobotContainer:
         theta_error = theta - bot_pose.rotation().radians()
         # Two possible changes in heading angle are possible--find the smaller one
         theta_error = (theta_error + math.pi) % (2 * math.pi) - math.pi
-        print(f"Theta Error: {theta_error/math.pi:.3f}π")
+        print(f"Theta Error: {theta_error/math.pi:.3f}pi")
 
         # Apply a proportional constant to the rotational error, producing a desired angular velocity
         output = Software.ANGULAR_POSITION_kP * theta_error

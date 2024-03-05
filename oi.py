@@ -47,6 +47,11 @@ class DriverActionSet(Protocol):
 
     @property
     @abstractmethod
+    def reset_pose_to_vision(self) -> Trigger:
+        raise NotImplementedError
+
+    @property
+    @abstractmethod
     def ski_stop(self) -> Trigger:
         """Turn the wheels to an 'X' shape"""
         raise NotImplementedError
@@ -97,6 +102,10 @@ class XboxDriver(DriverActionSet):
     @property
     def toggle_field_relative(self) -> Trigger:
         return self.stick.back()
+
+    @property
+    def reset_pose_to_vision(self) -> Trigger:
+        return self.stick.a()
 
     @property
     def ski_stop(self) -> Trigger:
