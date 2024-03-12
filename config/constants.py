@@ -33,10 +33,10 @@ class SwerveConstants:
     DRIVE_CLOSED_LOOP_RAMP_RATE = 0
 
     # Swerve module absolute encoder offsets (in degrees)
-    FL_ENCODER_OFFSET = 345.234375
-    FR_ENCODER_OFFSET = 333.105469
-    BL_ENCODER_OFFSET = 131.572266
-    BR_ENCODER_OFFSET = 165.322266
+    FL_ENCODER_OFFSET = 0
+    FR_ENCODER_OFFSET = 0
+    BL_ENCODER_OFFSET = 0
+    BR_ENCODER_OFFSET = 0
 
     FL_DRIVE_ID = 1
     FL_STEERING_ID = 2
@@ -67,7 +67,7 @@ class SwerveConstants:
 
     # PID constants for steering motors. Steering motors always
     # use closed-loop control.
-    STEERING_kP = 0.01
+    STEERING_kP = 0.3
 
     # PID and feedforward constants for drive motors
     DRIVE_kP = 0

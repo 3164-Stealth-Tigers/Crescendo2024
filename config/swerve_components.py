@@ -1,10 +1,10 @@
-import rev
+import phoenix5
 from wpimath.geometry import Translation2d, Rotation2d
 
 from swervepy import u
 from swervepy.impl import (
-    NEOCoaxialDriveComponent,
-    NEOCoaxialAzimuthComponent,
+    Falcon500CoaxialDriveComponent,
+    Falcon500CoaxialAzimuthComponent,
     Pigeon2Gyro,
     AbsoluteCANCoder,
     CoaxialSwerveModule,
@@ -12,8 +12,8 @@ from swervepy.impl import (
 
 from .constants import SwerveConstants
 
-DRIVE_COMPONENT_CLASS = NEOCoaxialDriveComponent
-STEERING_COMPONENT_CLASS = NEOCoaxialAzimuthComponent
+DRIVE_COMPONENT_CLASS = Falcon500CoaxialDriveComponent
+STEERING_COMPONENT_CLASS = Falcon500CoaxialAzimuthComponent
 GYRO_CLASS = Pigeon2Gyro
 ABSOLUTE_ENCODER_CLASS = AbsoluteCANCoder
 
@@ -25,7 +25,8 @@ DRIVE_COMPONENT_PARAMS = DRIVE_COMPONENT_CLASS.Parameters(
     closed_loop_ramp_rate=SwerveConstants.DRIVE_CLOSED_LOOP_RAMP_RATE,
     continuous_current_limit=SwerveConstants.DRIVE_CONTINUOUS_CURRENT_LIMIT,
     peak_current_limit=SwerveConstants.DRIVE_PEAK_CURRENT_LIMIT,
-    neutral_mode=rev.CANSparkMax.IdleMode.kCoast,
+    peak_current_duration=0.1,
+    neutral_mode=phoenix5.NeutralMode.Coast,
     kP=SwerveConstants.DRIVE_kP,
     kI=0,
     kD=0,
@@ -40,7 +41,8 @@ STEERING_COMPONENT_PARAMS = STEERING_COMPONENT_CLASS.Parameters(
     ramp_rate=0,
     continuous_current_limit=SwerveConstants.STEERING_CONTINUOUS_CURRENT_LIMIT,
     peak_current_limit=SwerveConstants.STEERING_PEAK_CURRENT_LIMIT,
-    neutral_mode=rev.CANSparkMax.IdleMode.kBrake,
+    peak_current_duration=0.1,
+    neutral_mode=phoenix5.NeutralMode.Brake,
     kP=SwerveConstants.STEERING_kP,
     kI=0,
     kD=0,
