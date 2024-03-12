@@ -8,9 +8,9 @@ from photonlibpy.photonPoseEstimator import PhotonPoseEstimator, PoseStrategy
 import robotpy_apriltag as apriltag
 from wpimath.geometry import Transform3d, Pose2d
 
-from config.constants import Coprocessor, Physical
+from config.constants import CoprocessorConstants, Physical
 
-camera = PhotonCamera(Coprocessor.CAMERA_NAME)
+camera = PhotonCamera(CoprocessorConstants.CAMERA_NAME)
 estimator = PhotonPoseEstimator(
     apriltag.loadAprilTagLayoutField(apriltag.AprilTagField.k2024Crescendo),
     PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR,

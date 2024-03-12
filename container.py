@@ -5,13 +5,14 @@ import wpilib
 import pathplannerlib as pp
 from commands2.sysid import SysIdRoutine
 
-import vision
-from config import swerve_components
-from config.constants import Operation, Physical, Software, Field
+# import vision
+# from config import swerve_components
+from config.constants import OperationConstants, AutoConstants, FieldConstants#, SwerveConstants
+from subsystems import Shooter, Intake, Climber
 from swervepy import SwerveDrive
 
 from commands.swerve import ski_stop_command
-from oi import XboxDriver, PS4Driver
+from oi import XboxDriver, PS4Driver, XboxOperator
 
 
 class RobotContainer:
@@ -19,20 +20,23 @@ class RobotContainer:
         wpilib.DriverStation.silenceJoystickConnectionWarning(True)
 
         # Driver Xbox controller
-        self.driver_stick = XboxDriver(Operation.DRIVER_JOYSTICK_ID)
+        # self.driver_stick = XboxDriver(OperationConstants.DRIVER_JOYSTICK_ID)
         # To use with a PS4 controller:
         # self.driver_stick = PS4Driver(Operation.DRIVER_JOYSTICK_ID)
 
-        # Xbox controller for running SysId and test functions
-        self.test_stick = commands2.button.CommandXboxController(Operation.TEST_JOYSTICK_ID)
+        self.operator_stick = XboxOperator(OperationConstants.OPERATOR_JOYSTICK_ID)
 
+        # Xbox controller for running SysId and test functions
+        # self.test_stick = commands2.button.CommandXboxController(OperationConstants.TEST_JOYSTICK_ID)
+
+        """
         # Construct the swerve drivetrain
         self.swerve = SwerveDrive(
             swerve_components.MODULES,
             swerve_components.GYRO,
-            Physical.MAX_SPEED,
-            Physical.MAX_ANGULAR_SPEED,
-            vision.get_estimated_global_pose_2d,
+            SwerveConstants.MAX_SPEED,
+            SwerveConstants.MAX_ANGULAR_SPEED,
+            # vision.get_estimated_global_pose_2d,
         )
 
         # Experimental: Set a default callback for rotation so that we can change it to something else
@@ -43,23 +47,39 @@ class RobotContainer:
             self.driver_stick.forward,
             self.driver_stick.strafe,
             self.default_turn_source,
-            Software.FIELD_RELATIVE,
-            Software.DRIVE_OPEN_LOOP,
+            SwerveConstants.FIELD_RELATIVE,
+            SwerveConstants.DRIVE_OPEN_LOOP,
         )
         # The teleop command will run whenever no other command is running on the Swerve subsystem
         # (e.g., autonomous, ski stop)
         self.swerve.setDefaultCommand(self.teleop_command)
         # Publish information about the state of the command to Smart Dashboard
         wpilib.SmartDashboard.putData(self.teleop_command)
+        """
 
         # Initialize other subsystems here
+        self.shooter = Shooter()
+        shooter_command = commands2.RunCommand(lambda: self.shooter.run_flywheel_power(self.operator_stick.flywheel())).alongWith(commands2.RunCommand(lambda: self.shooter.run_pivot_power(self.operator_stick.pivot())))
+        shooter_command.addRequirements(self.shooter)
+        self.shooter.setDefaultCommand(shooter_command)
 
-        self.configure_button_bindings()
+        self.intake = Intake()
+        self.intake.setDefaultCommand(
+            commands2.RunCommand(lambda: self.intake.run_intake_power(self.operator_stick.intake()), self.intake)
+        )
+
+        self.climber = Climber()
+        self.climber.setDefaultCommand(
+            commands2.RunCommand(lambda: self.climber.run_climber_power(self.operator_stick.climber()), self.climber)
+        )
+
+        # self.configure_button_bindings()
 
     def get_autonomous_command(self):
+        return commands2.Command()
         return self.swerve.follow_trajectory_command(
             pp.path.PathPlannerPath.fromPathFile("Drive Forward"),
-            Software.TRAJECTORY_PARAMS,
+            AutoConstants.TRAJECTORY_PARAMS,
             True,
             True,
         )
@@ -111,9 +131,9 @@ class RobotContainer:
 
         # Locate the correct SPEAKER depending on which alliance we're on
         if wpilib.DriverStation.getAlliance() == wpilib.DriverStation.Alliance.kBlue:
-            speaker_pos = Field.BLUE_SPEAKER_POSITION
+            speaker_pos = FieldConstants.BLUE_SPEAKER_POSITION
         else:
-            speaker_pos = Field.RED_SPEAKER_POSITION
+            speaker_pos = FieldConstants.RED_SPEAKER_POSITION
 
         bot_pose = self.swerve.pose
 
@@ -129,7 +149,7 @@ class RobotContainer:
         print(f"Theta Error: {theta_error/math.pi:.3f}pi")
 
         # Apply a proportional constant to the rotational error, producing a desired angular velocity
-        output = Software.ANGULAR_POSITION_kP * theta_error
+        output = AutoConstants.ANGULAR_POSITION_kP * theta_error
 
         # Return the desired angular velocity as a percentage from -1 to 1
         return output / self.swerve.max_angular_velocity

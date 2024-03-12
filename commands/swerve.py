@@ -4,7 +4,7 @@ from wpimath.geometry import Rotation2d, Translation2d
 from wpimath.kinematics import SwerveModuleState
 
 import swervepy
-from config.constants import Software
+from config.constants import SwerveConstants, AutoConstants
 
 
 def ski_stop_command(swerve: swervepy.SwerveDrive):
@@ -24,7 +24,7 @@ def drive_command(
     swerve: swervepy.SwerveDrive, x_distance: float, y_distance: float, rotation: float, field_relative: bool = False
 ):
     translation = Translation2d(x_distance, y_distance)
-    return commands2.RunCommand(lambda: swerve.drive(translation, rotation, field_relative, Software.DRIVE_OPEN_LOOP))
+    return commands2.RunCommand(lambda: swerve.drive(translation, rotation, field_relative, SwerveConstants.DRIVE_OPEN_LOOP))
 
 
 class TurnToAngleCommand(commands2.Command):
@@ -35,7 +35,7 @@ class TurnToAngleCommand(commands2.Command):
 
         # A feedback controller to control speed
         # Tune the Kp value to change how aggressive the controller is.
-        self.controller = wpimath.controller.PIDController(Software.ANGULAR_POSITION_kP, 0, 0)
+        self.controller = wpimath.controller.PIDController(AutoConstants.ANGULAR_POSITION_kP, 0, 0)
 
     def initialize(self):
         self.controller.reset()
@@ -43,7 +43,7 @@ class TurnToAngleCommand(commands2.Command):
 
     def execute(self):
         angular_velocity = self.controller.calculate(self.swerve.heading.radians())
-        self.swerve.drive(Translation2d(0, 0), angular_velocity, False, Software.DRIVE_OPEN_LOOP)
+        self.swerve.drive(Translation2d(0, 0), angular_velocity, False, SwerveConstants.DRIVE_OPEN_LOOP)
 
 
 def stop_command(swerve: swervepy.SwerveDrive):

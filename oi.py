@@ -68,6 +68,24 @@ class DriverActionSet(Protocol):
         raise NotImplementedError
 
 
+class OperatorActionSet(Protocol):
+    @abstractmethod
+    def flywheel(self) -> float:
+        raise NotImplementedError
+
+    @abstractmethod
+    def pivot(self) -> float:
+        raise NotImplementedError
+
+    @abstractmethod
+    def intake(self) -> float:
+        raise NotImplementedError
+
+    @abstractmethod
+    def climber(self) -> float:
+        raise NotImplementedError
+
+
 # Control schemes
 
 
@@ -202,6 +220,28 @@ class PS4Driver(DriverActionSet):
     @property
     def look_at_speaker(self) -> Trigger:
         return self.stick.square()
+
+
+class XboxOperator(OperatorActionSet):
+
+    def __init__(self, port: int):
+        """Construct an XboxOperator
+
+        :param port: The port that the joystick is plugged into. Reported on the Driver Station
+        """
+        self.stick = CommandXboxController(port)
+
+    def flywheel(self) -> float:
+        return self.stick.getRightTriggerAxis()
+
+    def pivot(self) -> float:
+        return -self.stick.getLeftY()
+
+    def intake(self) -> float:
+        return self.stick.getLeftTriggerAxis()
+
+    def climber(self) -> float:
+        return -self.stick.getRightY()
 
 
 def deadband(value, band):
