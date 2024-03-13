@@ -211,6 +211,10 @@ class PS4Driver(DriverActionSet):
         return self.stick.share()
 
     @property
+    def reset_pose_to_vision(self) -> Trigger:
+        return self.stick.cross()
+
+    @property
     def ski_stop(self) -> Trigger:
         return self.stick.triangle()
 
@@ -223,7 +227,6 @@ class PS4Driver(DriverActionSet):
 
 
 class XboxOperator(OperatorActionSet):
-
     def __init__(self, port: int):
         """Construct an XboxOperator
 
@@ -245,7 +248,6 @@ class XboxOperator(OperatorActionSet):
 
 
 class DanielXboxOperator(OperatorActionSet):
-
     def __init__(self, port: int):
         """Construct an XboxOperator
 
