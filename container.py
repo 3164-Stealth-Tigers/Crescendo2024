@@ -6,13 +6,13 @@ import pathplannerlib as pp
 from commands2.sysid import SysIdRoutine
 
 # import vision
-# from config import swerve_components
-from config.constants import OperationConstants, AutoConstants, FieldConstants#, SwerveConstants
+from config import swerve_components
+from config.constants import OperationConstants, AutoConstants, FieldConstants, SwerveConstants
 from subsystems import Shooter, Intake, Climber
 from swervepy import SwerveDrive
 
 from commands.swerve import ski_stop_command
-from oi import XboxDriver, PS4Driver, XboxOperator
+from oi import XboxDriver, PS4Driver, XboxOperator, DanielXboxOperator
 
 
 class RobotContainer:
@@ -20,16 +20,15 @@ class RobotContainer:
         wpilib.DriverStation.silenceJoystickConnectionWarning(True)
 
         # Driver Xbox controller
-        # self.driver_stick = XboxDriver(OperationConstants.DRIVER_JOYSTICK_ID)
+        self.driver_stick = XboxDriver(OperationConstants.DRIVER_JOYSTICK_ID)
         # To use with a PS4 controller:
         # self.driver_stick = PS4Driver(Operation.DRIVER_JOYSTICK_ID)
 
-        self.operator_stick = XboxOperator(OperationConstants.OPERATOR_JOYSTICK_ID)
+        self.operator_stick = DanielXboxOperator(OperationConstants.OPERATOR_JOYSTICK_ID)
 
         # Xbox controller for running SysId and test functions
         # self.test_stick = commands2.button.CommandXboxController(OperationConstants.TEST_JOYSTICK_ID)
 
-        """
         # Construct the swerve drivetrain
         self.swerve = SwerveDrive(
             swerve_components.MODULES,
@@ -41,12 +40,12 @@ class RobotContainer:
 
         # Experimental: Set a default callback for rotation so that we can change it to something else
         # then change it back later
-        self.default_turn_source = self.driver_stick.turn
+        # self.default_turn_source = self.driver_stick.turn
 
         self.teleop_command = self.swerve.teleop_command(
             self.driver_stick.forward,
             self.driver_stick.strafe,
-            self.default_turn_source,
+            self.driver_stick.turn,
             SwerveConstants.FIELD_RELATIVE,
             SwerveConstants.DRIVE_OPEN_LOOP,
         )
@@ -55,8 +54,8 @@ class RobotContainer:
         self.swerve.setDefaultCommand(self.teleop_command)
         # Publish information about the state of the command to Smart Dashboard
         wpilib.SmartDashboard.putData(self.teleop_command)
-        """
 
+        """
         # Initialize other subsystems here
         self.shooter = Shooter()
         shooter_command = commands2.RunCommand(lambda: self.shooter.run_flywheel_power(self.operator_stick.flywheel())).alongWith(commands2.RunCommand(lambda: self.shooter.run_pivot_power(self.operator_stick.pivot())))
@@ -72,8 +71,9 @@ class RobotContainer:
         self.climber.setDefaultCommand(
             commands2.RunCommand(lambda: self.climber.run_climber_power(self.operator_stick.climber()), self.climber)
         )
+        """
 
-        # self.configure_button_bindings()
+        self.configure_button_bindings()
 
     def get_autonomous_command(self):
         return commands2.Command()
@@ -96,7 +96,8 @@ class RobotContainer:
         )
 
         self.driver_stick.reset_pose_to_vision.onTrue(
-            commands2.InstantCommand(self.swerve.reset_odometry_to_vision)
+            #commands2.InstantCommand(self.swerve.reset_odometry_to_vision)
+            commands2.InstantCommand(self.swerve.reset_modules)
         )
 
         # Point the wheels in an 'X' direction to make the robot harder to push
@@ -112,6 +113,7 @@ class RobotContainer:
         )
         # fmt: on
 
+        """
         # SysId commands
         # Y: Dynamic forward
         self.test_stick.y().whileTrue(self.swerve.sys_id_dynamic(SysIdRoutine.Direction.kForward))
@@ -121,6 +123,7 @@ class RobotContainer:
         self.test_stick.b().whileTrue(self.swerve.sys_id_quasistatic(SysIdRoutine.Direction.kForward))
         # A: Quasistatic backward
         self.test_stick.a().whileTrue(self.swerve.sys_id_quasistatic(SysIdRoutine.Direction.kReverse))
+        """
 
     def alternate_turn_source(self):
         # Return a percentage from -1 to 1 that may be used in lieu of a joystick turning input.

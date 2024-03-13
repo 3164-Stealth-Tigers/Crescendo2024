@@ -244,5 +244,27 @@ class XboxOperator(OperatorActionSet):
         return -self.stick.getRightY()
 
 
+class DanielXboxOperator(OperatorActionSet):
+
+    def __init__(self, port: int):
+        """Construct an XboxOperator
+
+        :param port: The port that the joystick is plugged into. Reported on the Driver Station
+        """
+        self.stick = CommandXboxController(port)
+
+    def flywheel(self) -> float:
+        return 1 if self.stick.getHID().getXButton() else 0
+
+    def pivot(self) -> float:
+        return self.stick.getLeftTriggerAxis() - self.stick.getRightTriggerAxis()
+
+    def intake(self) -> float:
+        return 0.35 if self.stick.getHID().getAButton() else 0
+
+    def climber(self) -> float:
+        return -self.stick.getLeftY()
+
+
 def deadband(value, band):
     return value if abs(value) > band else 0

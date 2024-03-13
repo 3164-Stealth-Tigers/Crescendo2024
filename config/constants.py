@@ -19,8 +19,10 @@ class SwerveConstants:
     DRIVE_GEAR_RATIO = 6.75  # SDS Mk4i L2
     STEERING_GEAR_RATIO = 150 / 7  # SDS Mk4i
 
-    DRIVE_MOTOR_INVERTED = True
-    STEERING_MOTOR_INVERTED = True
+    FRONT_DRIVE_MOTOR_INVERTED = True
+    FRONT_STEERING_MOTOR_INVERTED = False
+    BACK_DRIVE_MOTOR_INVERTED = False
+    BACK_STEERING_MOTOR_INVERTED = True
     GYRO_INVERTED = False
 
     DRIVE_CONTINUOUS_CURRENT_LIMIT = 40
@@ -33,10 +35,20 @@ class SwerveConstants:
     DRIVE_CLOSED_LOOP_RAMP_RATE = 0
 
     # Swerve module absolute encoder offsets (in degrees)
-    FL_ENCODER_OFFSET = 0
-    FR_ENCODER_OFFSET = 0
-    BL_ENCODER_OFFSET = 0
-    BR_ENCODER_OFFSET = 0
+    FL_ENCODER_OFFSET = 106.259766
+    FR_ENCODER_OFFSET = 112.763672
+    BL_ENCODER_OFFSET = 227.373047
+    BR_ENCODER_OFFSET = 193.447266
+
+    INVERT_FRONT_ENCODER = False
+    INVERT_BACK_ENCODER = True
+
+    """
+    106.787109
+    96.943359
+    234.404297
+    200.654297
+    """
 
     FL_DRIVE_ID = 1
     FL_STEERING_ID = 2
@@ -55,7 +67,7 @@ class SwerveConstants:
     # FIELD_RELATIVE: True if "forward" means "down the field"; False if
     # "forward" means "in the direction the robot is facing".  A True value
     # requires a (non-Dummy) gyro.
-    FIELD_RELATIVE = True
+    FIELD_RELATIVE = False
 
     # DRIVE_OPEN_LOOP: True if we're not using PID control *for velocity targeting*,
     # i.e. when a target velocity is calculated, do we use the corresponding
