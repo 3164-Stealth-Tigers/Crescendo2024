@@ -3,7 +3,7 @@
 import math
 
 import rev
-from wpimath.geometry import Transform3d, Rotation3d, Translation2d
+from wpimath.geometry import Transform3d, Rotation3d, Translation2d, Rotation2d
 
 from swervepy import u, TrajectoryFollowerParameters
 
@@ -141,10 +141,16 @@ class AutoConstants:
         LINEAR_POSITION_kP,
     )
 
+    # Shooter Angles
+    # Degrees from horizontal. CCW+ from the left
+    SHOOTER_LOADING_ANGLE = Rotation2d.fromDegrees(90)
+    SPEAKER_SCORING_ANGLE = Rotation2d.fromDegrees(45)  # TODO: Find angle
+    AMP_SCORING_ANGLE = Rotation2d.fromDegrees(60)  # TODO: Find angle
+
 
 class CoprocessorConstants:
-    # CAMERA_NAME = "Arducam_OV9782_USB_Camera"
-    CAMERA_NAME = "Razer_Kiyo_Pro"
+    APRIL_TAG_CAMERA_NAME = "Arducam_OV9782_USB_Camera"
+    NOTE_CAMERA_NAME = "Razer_Kiyo_Pro"
 
     ROBOT_TO_CAMERA_TRANSFORMATION = Transform3d(0, 0, 0, Rotation3d(0, 0, 0))
 

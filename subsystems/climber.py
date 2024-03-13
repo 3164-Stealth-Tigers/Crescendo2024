@@ -16,10 +16,9 @@ class Direction(enum.Enum):
 
 
 class Climber(commands2.Subsystem):
-
     def __init__(self):
         super().__init__()
-        
+
         self._motor = rev.CANSparkMax(ClimberConstants.MOTOR_ID, rev.CANSparkMax.MotorType.kBrushless)
         self._encoder = self._motor.getEncoder()
         self._controller = self._motor.getPIDController()
@@ -32,9 +31,13 @@ class Climber(commands2.Subsystem):
         # Convert from rotations to metres with a gear ratio
         self._encoder.setPositionConversionFactor(ClimberConstants.SPOOL_CIRCUMFERENCE / ClimberConstants.GEAR_RATIO)
         # Convert from rpm to metres/sec
-        self._encoder.setVelocityConversionFactor(ClimberConstants.SPOOL_CIRCUMFERENCE / ClimberConstants.GEAR_RATIO / 60)
+        self._encoder.setVelocityConversionFactor(
+            ClimberConstants.SPOOL_CIRCUMFERENCE / ClimberConstants.GEAR_RATIO / 60
+        )
 
-        self._feedforward = wpimath.controller.SimpleMotorFeedforwardMeters(ClimberConstants.CLIMBER_kS, ClimberConstants.CLIMBER_kV)
+        self._feedforward = wpimath.controller.SimpleMotorFeedforwardMeters(
+            ClimberConstants.CLIMBER_kS, ClimberConstants.CLIMBER_kV
+        )
 
     @property
     def extension_height(self) -> float:
@@ -49,6 +52,9 @@ class Climber(commands2.Subsystem):
         velocity = ClimberConstants.CLIMBER_SPEED * (1 if direction is Direction.UP else -1)
         ff = self._feedforward.calculate(velocity)
         self._controller.setReference(velocity, rev.CANSparkMax.ControlType.kVelocity, arbFeedforward=ff)
+
+    def zero_position(self):
+        self._encoder.setPosition(0)
 
     def run_climber_power(self, power: float):
         self._motor.set(power)

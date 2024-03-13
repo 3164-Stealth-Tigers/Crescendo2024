@@ -6,18 +6,21 @@ from photonlibpy.estimatedRobotPose import EstimatedRobotPose
 from photonlibpy.photonCamera import PhotonCamera
 from photonlibpy.photonPoseEstimator import PhotonPoseEstimator, PoseStrategy
 import robotpy_apriltag as apriltag
-from wpimath.geometry import Transform3d, Pose2d
+from photonlibpy.photonTrackedTarget import PhotonTrackedTarget
+from wpimath.geometry import Transform3d, Pose2d, Transform2d
 
-from config.constants import CoprocessorConstants, Physical
+from config.constants import CoprocessorConstants
 
-camera = PhotonCamera(CoprocessorConstants.CAMERA_NAME)
+tag_camera = PhotonCamera(CoprocessorConstants.APRIL_TAG_CAMERA_NAME)
 estimator = PhotonPoseEstimator(
     apriltag.loadAprilTagLayoutField(apriltag.AprilTagField.k2024Crescendo),
     PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR,
-    camera,
-    Physical.ROBOT_TO_CAMERA_TRANSFORMATION,
+    tag_camera,
+    CoprocessorConstants.ROBOT_TO_CAMERA_TRANSFORMATION,
 )
 estimator.multiTagFallbackStrategy = PoseStrategy.LOWEST_AMBIGUITY
+
+note_camera = PhotonCamera(CoprocessorConstants.NOTE_CAMERA_NAME)
 
 
 def get_estimated_global_pose() -> Optional[EstimatedRobotPose]:
@@ -31,7 +34,7 @@ def get_estimated_global_pose_2d() -> Optional[Pose2d]:
 
 
 def get_tags() -> dict[int, Transform3d]:
-    photon_result = camera.getLatestResult().getTargets()
+    photon_result = tag_camera.getLatestResult().getTargets()
 
     tags = {}
     for target in photon_result:
@@ -44,6 +47,21 @@ def get_tags() -> dict[int, Transform3d]:
     return tags
 
 
+def get_closest_note() -> Optional[PhotonTrackedTarget]:
+    targets = note_camera.getLatestResult().getTargets()
+
+    if not targets:
+        return
+
+    # The target with the highest area will be the NOTE closest to us
+    closest_target = targets[0]
+    for target in targets:
+        if target.area > closest_target.area:
+            closest_target = target
+
+    return closest_target
+
+
 if __name__ == "__main__":
     inst = ntcore.NetworkTableInstance.getDefault()
     inst.startServer()
@@ -52,6 +70,13 @@ if __name__ == "__main__":
     while True:
         time.sleep(0.02)
 
+        note = get_closest_note()
+        if note:
+            transform = note.bestCameraToTarget
+            print(f"dYaw: {note.yaw}")
+            print(f"(feet) x: {transform.x_feet}, y: {transform.y_feet}, z: {transform.z_feet}")
+
+        """
         # Robot pose estimation
         pose = get_estimated_global_pose()
         # Check if the pose is valid
@@ -60,7 +85,6 @@ if __name__ == "__main__":
             print(f"X: {pose.x}, Y: {pose.y}, Z: {pose.z}")
 
         # AprilTag-relative transforms
-        """
         targets = get_tags()
         for i, transform in targets.items():
             print(f"ID: {i}, X: {transform.x}, Y: {transform.y}, Z: {transform.z}")

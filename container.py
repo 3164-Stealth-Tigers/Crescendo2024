@@ -40,12 +40,12 @@ class RobotContainer:
 
         # Experimental: Set a default callback for rotation so that we can change it to something else
         # then change it back later
-        # self.default_turn_source = self.driver_stick.turn
+        self.default_turn_source = self.driver_stick.turn
 
         self.teleop_command = self.swerve.teleop_command(
             self.driver_stick.forward,
             self.driver_stick.strafe,
-            self.driver_stick.turn,
+            self.default_turn_source,
             SwerveConstants.FIELD_RELATIVE,
             SwerveConstants.DRIVE_OPEN_LOOP,
         )
@@ -55,28 +55,29 @@ class RobotContainer:
         # Publish information about the state of the command to Smart Dashboard
         wpilib.SmartDashboard.putData(self.teleop_command)
 
-        """
         # Initialize other subsystems here
         self.shooter = Shooter()
-        shooter_command = commands2.RunCommand(lambda: self.shooter.run_flywheel_power(self.operator_stick.flywheel())).alongWith(commands2.RunCommand(lambda: self.shooter.run_pivot_power(self.operator_stick.pivot())))
+        shooter_command = commands2.RunCommand(
+            lambda: self.shooter.run_flywheel_power(self.operator_stick.flywheel())
+        ).alongWith(commands2.RunCommand(lambda: self.shooter.run_pivot_power(self.operator_stick.pivot())))
         shooter_command.addRequirements(self.shooter)
         self.shooter.setDefaultCommand(shooter_command)
+        wpilib.SmartDashboard.putData(self.shooter)
 
         self.intake = Intake()
         self.intake.setDefaultCommand(
             commands2.RunCommand(lambda: self.intake.run_intake_power(self.operator_stick.intake()), self.intake)
         )
+        wpilib.SmartDashboard.putData(self.intake)
 
         self.climber = Climber()
         self.climber.setDefaultCommand(
             commands2.RunCommand(lambda: self.climber.run_climber_power(self.operator_stick.climber()), self.climber)
         )
-        """
 
         self.configure_button_bindings()
 
     def get_autonomous_command(self):
-        return commands2.Command()
         return self.swerve.follow_trajectory_command(
             pp.path.PathPlannerPath.fromPathFile("Drive Forward"),
             AutoConstants.TRAJECTORY_PARAMS,
@@ -87,6 +88,10 @@ class RobotContainer:
     def configure_button_bindings(self):
         """Bind buttons on the Xbox controllers to run Commands"""
 
+        ##################
+        # Swerve Buttons #
+        ##################
+
         # Reset the robot's heading reading to 0
         self.driver_stick.reset_gyro.onTrue(commands2.InstantCommand(self.swerve.zero_heading))
 
@@ -96,7 +101,7 @@ class RobotContainer:
         )
 
         self.driver_stick.reset_pose_to_vision.onTrue(
-            #commands2.InstantCommand(self.swerve.reset_odometry_to_vision)
+            # commands2.InstantCommand(self.swerve.reset_odometry_to_vision)
             commands2.InstantCommand(self.swerve.reset_modules)
         )
 
@@ -124,6 +129,11 @@ class RobotContainer:
         # A: Quasistatic backward
         self.test_stick.a().whileTrue(self.swerve.sys_id_quasistatic(SysIdRoutine.Direction.kReverse))
         """
+
+        ###################
+        # Shooter Buttons #
+        ###################
+        # TODO: Operator buttons for loading (intake), speaker, and amp angle
 
     def alternate_turn_source(self):
         # Return a percentage from -1 to 1 that may be used in lieu of a joystick turning input.
