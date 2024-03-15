@@ -11,15 +11,16 @@ class Shooter(commands2.Subsystem):
     def __init__(self):
         super().__init__()
 
-        self._flywheel_motor = rev.CANSparkMax(
+        self._flywheel_motor_left = rev.CANSparkMax(
             ShooterConstants.FLYWHEEL_LEFT_MOTOR_ID, rev.CANSparkMax.MotorType.kBrushless
         )
-        self._flywheel_encoder = self._flywheel_motor.getEncoder()
-        self._flywheel_controller = self._flywheel_motor.getPIDController()
+        self._flywheel_encoder = self._flywheel_motor_left.getEncoder()
+        self._flywheel_controller = self._flywheel_motor_left.getPIDController()
 
-        self._flywheel_motor.restoreFactoryDefaults()
-        self._flywheel_motor.setSmartCurrentLimit(40)
-        self._flywheel_motor.setSecondaryCurrentLimit(60)
+        self._flywheel_motor_left.restoreFactoryDefaults()
+        self._flywheel_motor_left.setSmartCurrentLimit(40)
+        self._flywheel_motor_left.setSecondaryCurrentLimit(60)
+        self._flywheel_motor_left.setInverted(ShooterConstants.INVERT_LEFT_FLYWHEEL)
 
         # Convert from rpm to metres/sec with a gear ratio
         self._flywheel_encoder.setVelocityConversionFactor(
@@ -34,22 +35,38 @@ class Shooter(commands2.Subsystem):
             ShooterConstants.FLYWHEEL_kS, ShooterConstants.FLYWHEEL_kV
         )
 
-        self._flywheel_slave = rev.CANSparkMax(
+        self._flywheel_motor_right = rev.CANSparkMax(
             ShooterConstants.FLYWHEEL_RIGHT_MOTOR_ID, rev.CANSparkMax.MotorType.kBrushless
         )
-        self._flywheel_slave.restoreFactoryDefaults()
-        self._flywheel_slave.setSmartCurrentLimit(40)
-        self._flywheel_slave.setSecondaryCurrentLimit(60)
-        self._flywheel_slave.setInverted(True)
+        self._flywheel_motor_right.restoreFactoryDefaults()
+        self._flywheel_motor_right.setSmartCurrentLimit(40)
+        self._flywheel_motor_right.setSecondaryCurrentLimit(60)
+        self._flywheel_motor_right.setInverted(ShooterConstants.INVERT_RIGHT_FLYWHEEL)
         # flywheel_slave.follow(self._flywheel_motor, invert=True)
 
         self._pivot_motor = rev.CANSparkMax(ShooterConstants.PIVOT_MOTOR_ID, rev.CANSparkMax.MotorType.kBrushless)
         self._pivot_encoder = self._pivot_motor.getAbsoluteEncoder(rev.SparkAbsoluteEncoder.Type.kDutyCycle)
         self._pivot_controller = self._pivot_motor.getPIDController()
 
+        self._pivot_motor.restoreFactoryDefaults()
         self._pivot_controller.setFeedbackDevice(self._pivot_encoder)
         self._pivot_controller.setP(ShooterConstants.PIVOT_kP)
         self._pivot_controller.setD(ShooterConstants.PIVOT_kD)
+
+        self._pivot_motor.setSmartCurrentLimit(60)
+        self._pivot_motor.setSecondaryCurrentLimit(70)
+        self._pivot_encoder.setPositionConversionFactor(360)
+        self._pivot_encoder.setZeroOffset(ShooterConstants.PIVOT_OFFSET)
+
+        self._pivot_controller.setPositionPIDWrappingEnabled(True)
+        self._pivot_controller.setPositionPIDWrappingMaxInput(360)
+        self._pivot_controller.setPositionPIDWrappingMinInput(0)
+
+        self._pivot_motor.enableSoftLimit(rev.CANSparkMax.SoftLimitDirection.kForward, False)
+        self._pivot_motor.setSoftLimit(rev.CANSparkMax.SoftLimitDirection.kForward, ShooterConstants.PIVOT_FORWARD_LIMIT)
+
+        self._pivot_motor.enableSoftLimit(rev.CANSparkMax.SoftLimitDirection.kReverse, False)
+        self._pivot_motor.setSoftLimit(rev.CANSparkMax.SoftLimitDirection.kReverse, ShooterConstants.PIVOT_REVERSE_LIMIT)
 
     def run_flywheel_velocity(self, output_speed: float):
         """Run the flywheel at a specified speed
@@ -60,12 +77,12 @@ class Shooter(commands2.Subsystem):
         self._flywheel_controller.setReference(output_speed, rev.CANSparkMax.ControlType.kVelocity, arbFeedforward=ff)
 
     def run_flywheel_power(self, output_power: float):
-        self._flywheel_motor.set(output_power)
-        self._flywheel_slave.set(output_power)
+        self._flywheel_motor_left.set(output_power)
+        self._flywheel_motor_right.set(output_power)
 
     def stop_flywheel(self):
         """Stop the flywheel"""
-        self._flywheel_motor.stopMotor()
+        self._flywheel_motor_left.stopMotor()
 
     def set_angle(self, angle: Rotation2d):
         """Move the shooter to a specified angle
@@ -93,10 +110,19 @@ class Shooter(commands2.Subsystem):
         raise NotImplementedError
 
     def initSendable(self, builder: SendableBuilder) -> None:
-        builder.addDoubleProperty(
-            "Shooter Angle (deg)", self.angle.degrees, lambda angle: self.set_angle(Rotation2d.fromDegrees(angle))
-        )
+        builder.addDoubleProperty("Shooter Angle (deg)", lambda: self.angle.degrees(), lambda _: None)
         builder.addDoubleProperty("Flywheel Velocity", lambda: self.flywheel_speed, lambda _: None)
         builder.addDoubleProperty(
-            "Flywheel Percent Output", self._flywheel_motor.getAppliedOutput, self.run_flywheel_power
+            "Flywheel Percent Output", self._flywheel_motor_left.getAppliedOutput, self.run_flywheel_power
         )
+
+    """
+    def shooter_angle_command(self, angle: Rotation2d):
+        return commands2.FunctionalCommand(
+            lambda: self.set_angle(angle),
+            lambda: None,
+            lambda _: None,
+            lambda: True,
+            self,
+        )
+    """

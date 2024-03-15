@@ -4,14 +4,15 @@ import commands2
 import wpilib
 import pathplannerlib as pp
 from commands2.sysid import SysIdRoutine
+from wpimath.geometry import Rotation2d
 
 # import vision
 from config import swerve_components
 from config.constants import OperationConstants, AutoConstants, FieldConstants, SwerveConstants
 from subsystems import Shooter, Intake, Climber
-from swervepy import SwerveDrive
+from swervepy import SwerveDrive, u
 
-from commands.swerve import ski_stop_command
+from commands.swerve import ski_stop_command, drive_command
 from oi import XboxDriver, PS4Driver, XboxOperator, DanielXboxOperator
 
 
@@ -58,7 +59,7 @@ class RobotContainer:
         # Initialize other subsystems here
         self.shooter = Shooter()
         shooter_command = commands2.RunCommand(
-            lambda: self.shooter.run_flywheel_power(self.operator_stick.flywheel())
+            lambda: self.shooter.run_flywheel_power(self.operator_stick.flywheel() + self.operator_stick.intake())
         ).alongWith(commands2.RunCommand(lambda: self.shooter.run_pivot_power(self.operator_stick.pivot())))
         shooter_command.addRequirements(self.shooter)
         self.shooter.setDefaultCommand(shooter_command)
@@ -78,12 +79,14 @@ class RobotContainer:
         self.configure_button_bindings()
 
     def get_autonomous_command(self):
-        return self.swerve.follow_trajectory_command(
-            pp.path.PathPlannerPath.fromPathFile("Drive Forward"),
-            AutoConstants.TRAJECTORY_PARAMS,
-            True,
-            True,
+        initial_translation = self.swerve.pose.translation()
+        goal_distance = (100 * u.inch).m_as(u.m)
+
+        auto_command = drive_command(self.swerve, 1, 0, 0).until(
+            lambda: self.swerve.pose.translation().distance(initial_translation) >= goal_distance
         )
+
+        return auto_command
 
     def configure_button_bindings(self):
         """Bind buttons on the Xbox controllers to run Commands"""
@@ -101,7 +104,6 @@ class RobotContainer:
         )
 
         self.driver_stick.reset_pose_to_vision.onTrue(
-            # commands2.InstantCommand(self.swerve.reset_odometry_to_vision)
             commands2.InstantCommand(self.swerve.reset_modules)
         )
 
@@ -134,6 +136,11 @@ class RobotContainer:
         # Shooter Buttons #
         ###################
         # TODO: Operator buttons for loading (intake), speaker, and amp angle
+
+        self.operator_stick.angle_1.whileTrue(commands2.RunCommand(
+            lambda: self.shooter.set_angle(Rotation2d.fromDegrees(30 + 10)),
+            self.shooter,
+        ).finallyDo(lambda _: self.shooter.run_pivot_power(0)))
 
     def alternate_turn_source(self):
         # Return a percentage from -1 to 1 that may be used in lieu of a joystick turning input.

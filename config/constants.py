@@ -19,9 +19,9 @@ class SwerveConstants:
     DRIVE_GEAR_RATIO = 6.75  # SDS Mk4i L2
     STEERING_GEAR_RATIO = 150 / 7  # SDS Mk4i
 
-    FRONT_DRIVE_MOTOR_INVERTED = True
+    FRONT_DRIVE_MOTOR_INVERTED = False
     FRONT_STEERING_MOTOR_INVERTED = False
-    BACK_DRIVE_MOTOR_INVERTED = False
+    BACK_DRIVE_MOTOR_INVERTED = True
     BACK_STEERING_MOTOR_INVERTED = True
     GYRO_INVERTED = False
 
@@ -35,20 +35,13 @@ class SwerveConstants:
     DRIVE_CLOSED_LOOP_RAMP_RATE = 0
 
     # Swerve module absolute encoder offsets (in degrees)
-    FL_ENCODER_OFFSET = 106.259766
-    FR_ENCODER_OFFSET = 112.763672
-    BL_ENCODER_OFFSET = 227.373047
-    BR_ENCODER_OFFSET = 193.447266
+    FL_ENCODER_OFFSET = 195.117188
+    FR_ENCODER_OFFSET = 2.988281
+    BL_ENCODER_OFFSET = 228.515625
+    BR_ENCODER_OFFSET = 38.496094
 
     INVERT_FRONT_ENCODER = False
-    INVERT_BACK_ENCODER = True
-
-    """
-    106.787109
-    96.943359
-    234.404297
-    200.654297
-    """
+    INVERT_BACK_ENCODER = False
 
     FL_DRIVE_ID = 1
     FL_STEERING_ID = 2
@@ -67,7 +60,7 @@ class SwerveConstants:
     # FIELD_RELATIVE: True if "forward" means "down the field"; False if
     # "forward" means "in the direction the robot is facing".  A True value
     # requires a (non-Dummy) gyro.
-    FIELD_RELATIVE = False
+    FIELD_RELATIVE = True
 
     # DRIVE_OPEN_LOOP: True if we're not using PID control *for velocity targeting*,
     # i.e. when a target velocity is calculated, do we use the corresponding
@@ -109,7 +102,6 @@ class ClimberConstants:
     CLIMBER_kS = 0
     GEAR_RATIO = 15
     SPOOL_CIRCUMFERENCE = 0
-
     BOTTOM_LIMIT_SWITCH_TYPE = rev.SparkLimitSwitch.Type.kNormallyOpen
 
 
@@ -117,6 +109,9 @@ class ShooterConstants:
     FLYWHEEL_LEFT_MOTOR_ID = 13
     FLYWHEEL_RIGHT_MOTOR_ID = 12
     PIVOT_MOTOR_ID = 11
+
+    INVERT_LEFT_FLYWHEEL = True
+    INVERT_RIGHT_FLYWHEEL = False
 
     FLYWHEEL_GEAR_RATIO = 3 / 1
     LARGE_WHEEL_CIRCUMFERENCE = (3 * u.inch).m_as(u.m)
@@ -127,7 +122,11 @@ class ShooterConstants:
     FLYWHEEL_kD = 0
 
     PIVOT_kD = 0
-    PIVOT_kP = 0
+    PIVOT_kP = 0.03
+
+    PIVOT_OFFSET = 116.56773376464844 - 10  # Degrees
+    PIVOT_FORWARD_LIMIT = 56.20429611206054 + 10
+    PIVOT_REVERSE_LIMIT = 0 + 10
 
 
 class AutoConstants:

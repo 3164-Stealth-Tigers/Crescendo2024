@@ -21,10 +21,14 @@ def ski_stop_command(swerve: swervepy.SwerveDrive):
 
 
 def drive_command(
-    swerve: swervepy.SwerveDrive, x_distance: float, y_distance: float, rotation: float, field_relative: bool = False
+    swerve: swervepy.SwerveDrive, x_velocity: float, y_velocity: float, rotation: float, field_relative: bool = False
 ):
-    translation = Translation2d(x_distance, y_distance)
-    return commands2.RunCommand(lambda: swerve.drive(translation, rotation, field_relative, SwerveConstants.DRIVE_OPEN_LOOP))
+    translation = Translation2d(x_velocity, y_velocity)
+    return commands2.RunCommand(
+        lambda: swerve.drive(translation, rotation, field_relative, SwerveConstants.DRIVE_OPEN_LOOP)
+    ).finallyDo(
+        lambda: swerve.drive(Translation2d(), 0, False, True)
+    )
 
 
 class TurnToAngleCommand(commands2.Command):

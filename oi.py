@@ -85,6 +85,11 @@ class OperatorActionSet(Protocol):
     def climber(self) -> float:
         raise NotImplementedError
 
+    @property
+    @abstractmethod
+    def angle_1(self) -> Trigger:
+        raise NotImplementedError
+
 
 # Control schemes
 
@@ -244,7 +249,7 @@ class XboxOperator(OperatorActionSet):
         return self.stick.getLeftTriggerAxis()
 
     def climber(self) -> float:
-        return -self.stick.getRightY()
+        return self.stick.getRightY()
 
 
 class DanielXboxOperator(OperatorActionSet):
@@ -256,16 +261,20 @@ class DanielXboxOperator(OperatorActionSet):
         self.stick = CommandXboxController(port)
 
     def flywheel(self) -> float:
-        return 1 if self.stick.getHID().getXButton() else 0
+        return 1 if self.stick.getHID().getYButton() else 0
 
     def pivot(self) -> float:
-        return self.stick.getLeftTriggerAxis() - self.stick.getRightTriggerAxis()
+        return self.stick.getRightTriggerAxis() - self.stick.getLeftTriggerAxis()
 
     def intake(self) -> float:
         return 0.35 if self.stick.getHID().getAButton() else 0
 
     def climber(self) -> float:
-        return -self.stick.getLeftY()
+        return self.stick.getLeftY()
+
+    @property
+    def angle_1(self) -> Trigger:
+        return self.stick.x()
 
 
 def deadband(value, band):
