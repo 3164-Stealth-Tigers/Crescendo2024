@@ -151,7 +151,10 @@ class CoprocessorConstants:
     APRIL_TAG_CAMERA_NAME = "Arducam_OV9782_USB_Camera"
     NOTE_CAMERA_NAME = "Razer_Kiyo_Pro"
 
-    ROBOT_TO_CAMERA_TRANSFORMATION = Transform3d(0, 0, 0, Rotation3d(0, 0, 0))
+    # Transformation from the center of the robot (X,Y center of frame; Z bottom of frame)
+    # to the camera (X on the front plate/side with the lens; Y,Z center of the camera).
+    # In metres
+    ROBOT_TO_CAMERA_TRANSFORMATION = Transform3d(-0.3164, 0, 0.1472, Rotation3d(0, (-45 * u.deg).m_as(u.rad), 0))
 
 
 class OperationConstants:
