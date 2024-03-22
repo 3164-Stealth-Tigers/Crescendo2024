@@ -122,9 +122,13 @@ class ShooterConstants:
     FLYWHEEL_kD = 0
 
     PIVOT_kD = 0
-    PIVOT_kP = 0.03
+    PIVOT_kP = 0.02
 
-    PIVOT_OFFSET = 116.56773376464844 - 10  # Degrees
+    # Offset so the shooter angle is 10 at vertical
+    PIVOT_OFFSET = 61.779743 - 10  # Degrees
+    INVERT_PIVOT_ENCODER = False
+    INVERT_PIVOT_MOTOR = True
+
     PIVOT_FORWARD_LIMIT = 56.20429611206054 + 10
     PIVOT_REVERSE_LIMIT = 0 + 10
 
@@ -142,9 +146,9 @@ class AutoConstants:
 
     # Shooter Angles
     # Degrees from horizontal. CCW+ from the left
-    SHOOTER_LOADING_ANGLE = Rotation2d.fromDegrees(90)
-    SPEAKER_SCORING_ANGLE = Rotation2d.fromDegrees(45)  # TODO: Find angle
-    AMP_SCORING_ANGLE = Rotation2d.fromDegrees(60)  # TODO: Find angle
+    SHOOTER_LOADING_ANGLE = Rotation2d.fromDegrees(0 + 10)  # 0 + 10
+    SPEAKER_SCORING_ANGLE = Rotation2d.fromDegrees(45 + 10)  # TODO: Find angle
+    AMP_SCORING_ANGLE = Rotation2d.fromDegrees(320)  # TODO: Find angle
 
 
 class CoprocessorConstants:
@@ -167,3 +171,6 @@ class FieldConstants:
     # Unless otherwise specified, all positions/poses are global (i.e., relative to the blue alliance origin)
     BLUE_SPEAKER_POSITION = Translation2d(0, 5.5462)
     RED_SPEAKER_POSITION = Translation2d(16.5252, 5.5462)
+
+    BLUE_AMP_POSITION = Translation2d(0, 5.5462)
+    RED_AMP_POSITION = Translation2d(16.5252, 5.5462)

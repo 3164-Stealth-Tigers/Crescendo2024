@@ -1,6 +1,7 @@
 from typing import Optional
 
 import commands2
+import wpilib
 
 from container import RobotContainer
 
@@ -10,6 +11,8 @@ class Robot(commands2.TimedCommandRobot):
         self.container = RobotContainer()
         self.scheduler = commands2.CommandScheduler.getInstance()
         self.autonomous_command: Optional[commands2.Command] = None
+
+        wpilib.DataLogManager.start()
 
     def autonomousInit(self) -> None:
         self.autonomous_command = self.container.get_autonomous_command()

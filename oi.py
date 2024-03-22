@@ -67,6 +67,12 @@ class DriverActionSet(Protocol):
         """Hold to continuously rotate the robot to loot at the speaker"""
         raise NotImplementedError
 
+    @property
+    @abstractmethod
+    def look_at_amp(self) -> Trigger:
+        """Hold to continuously rotate the robot to loot at the amp"""
+        raise NotImplementedError
+
 
 class OperatorActionSet(Protocol):
     @abstractmethod
@@ -87,7 +93,17 @@ class OperatorActionSet(Protocol):
 
     @property
     @abstractmethod
-    def angle_1(self) -> Trigger:
+    def intake_height(self) -> Trigger:
+        raise NotImplementedError
+
+    @property
+    @abstractmethod
+    def speaker_height(self) -> Trigger:
+        raise NotImplementedError
+
+    @property
+    @abstractmethod
+    def amp_height(self) -> Trigger:
         raise NotImplementedError
 
 
@@ -140,6 +156,10 @@ class XboxDriver(DriverActionSet):
     @property
     def look_at_speaker(self) -> Trigger:
         return self.stick.x()
+
+    @property
+    def look_at_amp(self) -> Trigger:
+        return self.stick.b()
 
 
 class T16000M(DriverActionSet):
@@ -243,13 +263,13 @@ class XboxOperator(OperatorActionSet):
         return self.stick.getRightTriggerAxis()
 
     def pivot(self) -> float:
-        return -self.stick.getLeftY()
+        return deadband(-self.stick.getLeftY(), 0.05)
 
     def intake(self) -> float:
         return self.stick.getLeftTriggerAxis()
 
     def climber(self) -> float:
-        return self.stick.getRightY()
+        return deadband(self.stick.getRightY(), 0.05)
 
 
 class DanielXboxOperator(OperatorActionSet):
@@ -261,20 +281,28 @@ class DanielXboxOperator(OperatorActionSet):
         self.stick = CommandXboxController(port)
 
     def flywheel(self) -> float:
-        return 1 if self.stick.getHID().getYButton() else 0
+        return 1 if self.stick.getHID().getXButton() else -0.15 if self.stick.getHID().getRightBumper() else self.stick.getRightTriggerAxis() * 0.5
 
     def pivot(self) -> float:
-        return self.stick.getRightTriggerAxis() - self.stick.getLeftTriggerAxis()
+        return deadband(-self.stick.getRightY() * 0.3, 0.05)
 
     def intake(self) -> float:
-        return 0.35 if self.stick.getHID().getAButton() else 0
+        return self.stick.getLeftTriggerAxis() - (0.35 if self.stick.getHID().getLeftBumper() else 0)
 
     def climber(self) -> float:
-        return self.stick.getLeftY()
+        return deadband(self.stick.getLeftY(), 0.05)
 
     @property
-    def angle_1(self) -> Trigger:
-        return self.stick.x()
+    def intake_height(self) -> Trigger:
+        return self.stick.y()
+
+    @property
+    def speaker_height(self) -> Trigger:
+        return Trigger()
+
+    @property
+    def amp_height(self) -> Trigger:
+        return self.stick.a()
 
 
 def deadband(value, band):

@@ -4,9 +4,9 @@ import commands2
 import wpilib
 import pathplannerlib as pp
 from commands2.sysid import SysIdRoutine
-from wpimath.geometry import Rotation2d
+from wpimath.geometry import Rotation2d, Translation2d
 
-# import vision
+import limelight
 from config import swerve_components
 from config.constants import OperationConstants, AutoConstants, FieldConstants, SwerveConstants
 from subsystems import Shooter, Intake, Climber
@@ -36,7 +36,7 @@ class RobotContainer:
             swerve_components.GYRO,
             SwerveConstants.MAX_SPEED,
             SwerveConstants.MAX_ANGULAR_SPEED,
-            # vision.get_estimated_global_pose_2d,
+            limelight.get_estimated_pose,
         )
 
         # Experimental: Set a default callback for rotation so that we can change it to something else
@@ -59,7 +59,7 @@ class RobotContainer:
         # Initialize other subsystems here
         self.shooter = Shooter()
         shooter_command = commands2.RunCommand(
-            lambda: self.shooter.run_flywheel_power(self.operator_stick.flywheel() + self.operator_stick.intake())
+            lambda: self.shooter.run_flywheel_power(self.operator_stick.flywheel())
         ).alongWith(commands2.RunCommand(lambda: self.shooter.run_pivot_power(self.operator_stick.pivot())))
         shooter_command.addRequirements(self.shooter)
         self.shooter.setDefaultCommand(shooter_command)
@@ -78,15 +78,43 @@ class RobotContainer:
 
         self.configure_button_bindings()
 
-    def get_autonomous_command(self):
-        initial_translation = self.swerve.pose.translation()
-        goal_distance = (100 * u.inch).m_as(u.m)
+        # Setup autonomous
+        self.auto_chooser = wpilib.SendableChooser()
+        self.setup_autonomous()
+        wpilib.SmartDashboard.putData("Auto Chooser", self.auto_chooser)
 
-        auto_command = drive_command(self.swerve, 1, 0, 0).until(
+    def setup_autonomous(self):
+        initial_translation = self.swerve.pose.translation()
+        goal_distance = 2.54  # 100 inch
+        drive_fwd_cmd = drive_command(self.swerve, 1, 0, 0).until(
             lambda: self.swerve.pose.translation().distance(initial_translation) >= goal_distance
         )
+        self.auto_chooser.setDefaultOption("Drive Forward", drive_fwd_cmd)
 
-        return auto_command
+        self.auto_chooser.addOption("Do Nothing", commands2.Command())
+
+        score_preloaded_note_auto = commands2.ParallelCommandGroup(
+            self.swerve.teleop_command(
+                lambda: 0,
+                lambda: 0,
+                self.look_at_speaker,
+                SwerveConstants.FIELD_RELATIVE,
+                SwerveConstants.DRIVE_OPEN_LOOP,
+            ).until(lambda: -0.01 < self.look_at_speaker() < 0.01),
+            commands2.RunCommand(
+                lambda: self.shooter.set_angle(AutoConstants.SPEAKER_SCORING_ANGLE),
+                self.shooter,
+            ).finallyDo(lambda _: self.shooter.run_pivot_power(0)).withTimeout(2)
+        ).andThen(
+            commands2.RunCommand(
+                lambda: self.shooter.run_flywheel_power(1),
+                self.shooter,
+            ).finallyDo(lambda _: self.shooter.run_flywheel_power(0)).withTimeout(1)
+        )
+        self.auto_chooser.addOption("Score Preloaded Note [WIP]", score_preloaded_note_auto)
+
+    def get_autonomous_command(self):
+        return self.auto_chooser.getSelected()
 
     def configure_button_bindings(self):
         """Bind buttons on the Xbox controllers to run Commands"""
@@ -104,7 +132,7 @@ class RobotContainer:
         )
 
         self.driver_stick.reset_pose_to_vision.onTrue(
-            commands2.InstantCommand(self.swerve.reset_modules)
+            commands2.InstantCommand(self.swerve.reset_odometry_to_vision)
         )
 
         # Point the wheels in an 'X' direction to make the robot harder to push
@@ -114,7 +142,12 @@ class RobotContainer:
         # Experimental: Change the rotation input source with a button
         # fmt: off
         self.driver_stick.look_at_speaker.onTrue(
-            commands2.InstantCommand(lambda: setattr(self.teleop_command, "rotation", self.alternate_turn_source))
+            commands2.InstantCommand(lambda: setattr(self.teleop_command, "rotation", self.look_at_speaker))
+        ).onFalse(
+            commands2.InstantCommand(lambda: setattr(self.teleop_command, "rotation", self.default_turn_source))
+        )
+        self.driver_stick.look_at_amp.onTrue(
+            commands2.InstantCommand(lambda: setattr(self.teleop_command, "rotation", self.look_at_amp))
         ).onFalse(
             commands2.InstantCommand(lambda: setattr(self.teleop_command, "rotation", self.default_turn_source))
         )
@@ -137,39 +170,60 @@ class RobotContainer:
         ###################
         # TODO: Operator buttons for loading (intake), speaker, and amp angle
 
-        self.operator_stick.angle_1.whileTrue(commands2.RunCommand(
-            lambda: self.shooter.set_angle(Rotation2d.fromDegrees(30 + 10)),
-            self.shooter,
-        ).finallyDo(lambda _: self.shooter.run_pivot_power(0)))
+        # Go to vertical
+        self.operator_stick.intake_height.whileTrue(
+            self.shooter.shooter_angle_command(AutoConstants.SHOOTER_LOADING_ANGLE)
+        )
+        # Go to speaker scoring angle
+        self.operator_stick.speaker_height.whileTrue(
+            self.shooter.shooter_angle_command(AutoConstants.SPEAKER_SCORING_ANGLE)
+        )
+        # Go to amp scoring angle
+        self.operator_stick.amp_height.whileTrue(
+            self.shooter.shooter_angle_command(AutoConstants.AMP_SCORING_ANGLE)
+        )
 
-    def alternate_turn_source(self):
+    def look_with_shooter(self, target: Translation2d):
         # Return a percentage from -1 to 1 that may be used in lieu of a joystick turning input.
         # This method calculates the angular velocity required to turn the robot toward the SPEAKER slot.
 
         # NOTE: This would probably be better as its own command. Just need to retain the ability
         # to translate the robot with joysticks while the command is active.
 
-        # Locate the correct SPEAKER depending on which alliance we're on
-        if wpilib.DriverStation.getAlliance() == wpilib.DriverStation.Alliance.kBlue:
-            speaker_pos = FieldConstants.BLUE_SPEAKER_POSITION
-        else:
-            speaker_pos = FieldConstants.RED_SPEAKER_POSITION
-
         bot_pose = self.swerve.pose
 
         # Calculate the angle from the robot's position to the SPEAKER's position
-        dy = speaker_pos.y - bot_pose.y
-        dx = speaker_pos.x - bot_pose.x
+        dy = target.y - bot_pose.y
+        dx = target.x - bot_pose.x
         theta = math.atan2(dy, dx)
 
         # Calculate the required change in robot heading angle
-        theta_error = theta - bot_pose.rotation().radians()
+        # Add pi to make the robot "look" with its shooter facing forward instead of its front
+        theta_error = theta - (bot_pose.rotation().radians() + math.pi)
         # Two possible changes in heading angle are possible--find the smaller one
         theta_error = (theta_error + math.pi) % (2 * math.pi) - math.pi
-        print(f"Theta Error: {theta_error/math.pi:.3f}pi")
+        print(f"Theta Error: {theta_error / math.pi:.3f}pi")
 
         # Apply a proportional constant to the rotational error, producing a desired angular velocity
         output = AutoConstants.ANGULAR_POSITION_kP * theta_error
 
         # Return the desired angular velocity as a percentage from -1 to 1
         return output / self.swerve.max_angular_velocity
+
+    def look_at_speaker(self):
+        # Locate the correct SPEAKER depending on which alliance we're on
+        if wpilib.DriverStation.getAlliance() == wpilib.DriverStation.Alliance.kBlue:
+            speaker_pos = FieldConstants.BLUE_SPEAKER_POSITION
+        else:
+            speaker_pos = FieldConstants.RED_SPEAKER_POSITION
+
+        return self.look_with_shooter(speaker_pos)
+
+    def look_at_amp(self):
+        if wpilib.DriverStation.getAlliance() == wpilib.DriverStation.Alliance.kBlue:
+            speaker_pos = FieldConstants.BLUE_AMP_POSITION
+        else:
+            speaker_pos = FieldConstants.BLUE_SPEAKER_POSITION
+
+        return self.look_with_shooter(speaker_pos)
+

@@ -25,9 +25,10 @@ def drive_command(
 ):
     translation = Translation2d(x_velocity, y_velocity)
     return commands2.RunCommand(
-        lambda: swerve.drive(translation, rotation, field_relative, SwerveConstants.DRIVE_OPEN_LOOP)
+        lambda: swerve.drive(translation, rotation, field_relative, SwerveConstants.DRIVE_OPEN_LOOP),
+        swerve,
     ).finallyDo(
-        lambda: swerve.drive(Translation2d(), 0, False, True)
+        lambda _: swerve.drive(Translation2d(), 0, False, True)
     )
 
 

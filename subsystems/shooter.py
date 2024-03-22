@@ -49,13 +49,17 @@ class Shooter(commands2.Subsystem):
         self._pivot_controller = self._pivot_motor.getPIDController()
 
         self._pivot_motor.restoreFactoryDefaults()
+        self._pivot_motor.setInverted(ShooterConstants.INVERT_PIVOT_MOTOR)
         self._pivot_controller.setFeedbackDevice(self._pivot_encoder)
         self._pivot_controller.setP(ShooterConstants.PIVOT_kP)
         self._pivot_controller.setD(ShooterConstants.PIVOT_kD)
 
         self._pivot_motor.setSmartCurrentLimit(60)
         self._pivot_motor.setSecondaryCurrentLimit(70)
+
+        # Position conversion factor and inversion MUST be set before zero offset
         self._pivot_encoder.setPositionConversionFactor(360)
+        self._pivot_encoder.setInverted(ShooterConstants.INVERT_PIVOT_ENCODER)
         self._pivot_encoder.setZeroOffset(ShooterConstants.PIVOT_OFFSET)
 
         self._pivot_controller.setPositionPIDWrappingEnabled(True)
@@ -116,13 +120,7 @@ class Shooter(commands2.Subsystem):
             "Flywheel Percent Output", self._flywheel_motor_left.getAppliedOutput, self.run_flywheel_power
         )
 
-    """
     def shooter_angle_command(self, angle: Rotation2d):
-        return commands2.FunctionalCommand(
-            lambda: self.set_angle(angle),
-            lambda: None,
-            lambda _: None,
-            lambda: True,
-            self,
+        return commands2.RunCommand(lambda: self.set_angle(angle), self).finallyDo(
+            lambda _: self.run_pivot_power(0)
         )
-    """
