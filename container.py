@@ -2,7 +2,7 @@
 
 import commands2
 import wpilib
-import pathplannerlib as pp
+from pathplannerlib.path import PathPlannerPath
 from commands2.sysid import SysIdRoutine
 from wpimath.geometry import Rotation2d, Translation2d
 
@@ -93,7 +93,7 @@ class RobotContainer:
 
         self.auto_chooser.addOption("Do Nothing", commands2.Command())
 
-        score_preloaded_note_auto = commands2.ParallelCommandGroup(
+        score_preload_speaker_auto = commands2.ParallelCommandGroup(
             self.swerve.teleop_command(
                 lambda: 0,
                 lambda: 0,
@@ -111,7 +111,32 @@ class RobotContainer:
                 self.shooter,
             ).finallyDo(lambda _: self.shooter.run_flywheel_power(0)).withTimeout(1)
         )
-        self.auto_chooser.addOption("Score Preloaded Note [WIP]", score_preloaded_note_auto)
+        self.auto_chooser.addOption("Score Speaker [WIP]", score_preload_speaker_auto)
+
+        setup_amp_auto = self.swerve.follow_trajectory_command(
+            PathPlannerPath.fromPathFile("Amp"),
+            AutoConstants.TRAJECTORY_PARAMS,
+            True,
+            True,
+            lambda: wpilib.DriverStation.getAlliance() is wpilib.DriverStation.Alliance.kRed,
+        )
+        self.auto_chooser.addOption("Amp Setup", setup_amp_auto)
+
+        score_amp_auto = commands2.SequentialCommandGroup(
+            self.swerve.follow_trajectory_command(
+                PathPlannerPath.fromPathFile("Amp"),
+                AutoConstants.TRAJECTORY_PARAMS,
+                True,
+                True,
+                lambda: wpilib.DriverStation.getAlliance() is wpilib.DriverStation.Alliance.kRed,
+            ),
+            self.shooter.shooter_angle_command(AutoConstants.AMP_SCORING_ANGLE).withTimeout(2),
+            commands2.RunCommand(lambda: self.shooter.run_flywheel_power(0.15), self.shooter).finallyDo(
+                lambda _: self.shooter.run_flywheel_power(0)).withTimeout(2),
+            self.shooter.shooter_angle_command(AutoConstants.AMP_SCORING_ANGLE + Rotation2d.fromDegrees(10)).withTimeout(1),
+            drive_command(self.swerve, 0.1, 0, 0, False).withTimeout(0.75),
+        )
+        self.auto_chooser.addOption("Score Amp", score_amp_auto)
 
     def get_autonomous_command(self):
         return self.auto_chooser.getSelected()
