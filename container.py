@@ -13,7 +13,7 @@ from subsystems import Shooter, Intake, Climber
 from swervepy import SwerveDrive, u
 
 from commands.swerve import ski_stop_command, drive_command
-from oi import XboxDriver, PS4Driver, XboxOperator, DanielXboxOperator
+from oi import XboxDriver, PS4Driver, XboxOperator, DanielXboxOperator, PresidentsCircleXboxDriver
 
 
 class RobotContainer:
@@ -21,9 +21,9 @@ class RobotContainer:
         wpilib.DriverStation.silenceJoystickConnectionWarning(True)
 
         # Driver Xbox controller
-        self.driver_stick = XboxDriver(OperationConstants.DRIVER_JOYSTICK_ID)
+        self.driver_stick = PresidentsCircleXboxDriver(OperationConstants.DRIVER_JOYSTICK_ID)
         # To use with a PS4 controller:
-        # self.driver_stick = PS4Driver(Operation.DRIVER_JOYSTICK_ID)
+        # self.driver_stick = PS4Driver(OperationConstants.DRIVER_JOYSTICK_ID)
 
         self.operator_stick = DanielXboxOperator(OperationConstants.OPERATOR_JOYSTICK_ID)
 
@@ -103,21 +103,36 @@ class RobotContainer:
             commands2.InstantCommand(self.teleop_command.toggle_field_relative)
         )
 
-        self.driver_stick.reset_pose_to_vision.onTrue(
-            commands2.InstantCommand(self.swerve.reset_modules)
-        )
+        # self.driver_stick.reset_pose_to_vision.onTrue(commands2.InstantCommand(self.swerve.reset_modules))
 
         # Point the wheels in an 'X' direction to make the robot harder to push
         # Cancels when the driver starts driving again
         self.driver_stick.ski_stop.onTrue(ski_stop_command(self.swerve).until(self.driver_stick.is_movement_commanded))
 
+        self.driver_stick.fast_speeds.onTrue(
+            commands2.InstantCommand(
+                lambda: setattr(self.swerve, "max_velocity", SwerveConstants.MAX_SPEED.m_as(u.m / u.s))
+            ).andThen(commands2.InstantCommand(
+                lambda: setattr(self.swerve, "max_angular_velocity", SwerveConstants.MAX_ANGULAR_SPEED.m_as(u.rad / u.s))
+            ))
+        )
+        self.driver_stick.slow_speeds.onTrue(
+            commands2.InstantCommand(
+                lambda: setattr(self.swerve, "max_velocity", SwerveConstants.MAX_SPEED.m_as(u.m / u.s) * 0.5)
+            ).andThen(commands2.InstantCommand(
+                lambda: setattr(self.swerve, "max_angular_velocity", SwerveConstants.MAX_ANGULAR_SPEED.m_as(u.rad / u.s) * 0.5)
+            ))
+        )
+
         # Experimental: Change the rotation input source with a button
         # fmt: off
+        """
         self.driver_stick.look_at_speaker.onTrue(
             commands2.InstantCommand(lambda: setattr(self.teleop_command, "rotation", self.alternate_turn_source))
         ).onFalse(
             commands2.InstantCommand(lambda: setattr(self.teleop_command, "rotation", self.default_turn_source))
         )
+        """
         # fmt: on
 
         """
@@ -137,10 +152,14 @@ class RobotContainer:
         ###################
         # TODO: Operator buttons for loading (intake), speaker, and amp angle
 
-        self.operator_stick.angle_1.whileTrue(commands2.RunCommand(
-            lambda: self.shooter.set_angle(Rotation2d.fromDegrees(30 + 10)),
-            self.shooter,
-        ).finallyDo(lambda _: self.shooter.run_pivot_power(0)))
+        """
+        self.operator_stick.angle_1.whileTrue(
+            commands2.RunCommand(
+                lambda: self.shooter.set_angle(Rotation2d.fromDegrees(30 + 10)),
+                self.shooter,
+            ).finallyDo(lambda _: self.shooter.run_pivot_power(0))
+        )
+        """
 
     def alternate_turn_source(self):
         # Return a percentage from -1 to 1 that may be used in lieu of a joystick turning input.

@@ -277,5 +277,15 @@ class DanielXboxOperator(OperatorActionSet):
         return self.stick.x()
 
 
+class PresidentsCircleXboxDriver(XboxDriver):
+    @property
+    def fast_speeds(self) -> Trigger:
+        return self.stick.b()
+
+    @property
+    def slow_speeds(self) -> Trigger:
+        return self.stick.a()
+
+
 def deadband(value, band):
     return value if abs(value) > band else 0
