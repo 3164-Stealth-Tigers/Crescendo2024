@@ -132,8 +132,8 @@ class ShooterConstants:
     PIVOT_kP = 0.02
 
     # Offset so the shooter angle is 10 at vertical
-    PIVOT_OFFSET = 31.932662963867188  # Degrees
-    INVERT_PIVOT_ENCODER = False
+    PIVOT_OFFSET = 285.9017873  # Degrees
+    INVERT_PIVOT_ENCODER = True
     INVERT_PIVOT_MOTOR = True
 
     PIVOT_FORWARD_LIMIT = 56.20429611206054 + 10
@@ -153,8 +153,8 @@ class AutoConstants:
 
     # Shooter Angles
     # Degrees from horizontal. CCW+ from the left
-    SHOOTER_LOADING_ANGLE = Rotation2d.fromDegrees(0 + 10)  # 0 + 10
-    SPEAKER_SCORING_ANGLE = Rotation2d.fromDegrees(45 + 10)  # TODO: Find angle
+    SHOOTER_LOADING_ANGLE = Rotation2d.fromDegrees(11)
+    SPEAKER_SCORING_ANGLE = Rotation2d.fromDegrees(34.7)  # TODO: Find angle
     AMP_SCORING_ANGLE = Rotation2d.fromDegrees(320)  # TODO: Find angle
 
 

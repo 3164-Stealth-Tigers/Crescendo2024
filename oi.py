@@ -285,16 +285,17 @@ class DanielXboxOperator(OperatorActionSet):
         self.stick = CommandXboxController(port)
 
     def conveyor(self) -> float:
-        return self.stick.getRightTriggerAxis() - (0.3 if self.stick.getHID().getBButton() else 0)
+        return self.stick.getRightTriggerAxis() - (0.3 if self.stick.getHID().getRightBumper() else 0)
 
     def flywheel(self) -> float:
-        return 1 if self.stick.getHID().getXButton() else 0
+        return 1 if self.stick.getHID().getXButton() else -0.3 if self.stick.getHID().getRightBumper() else 0
 
     def pivot(self) -> float:
         return deadband(-self.stick.getRightY() * 0.3, 0.05)
 
     def intake(self) -> float:
-        return self.stick.getLeftTriggerAxis() - (0.35 if self.stick.getHID().getLeftBumper() else 0)
+        return self.stick.getRightTriggerAxis() - (0.3 if self.stick.getHID().getBButton() else 0)
+        # return self.stick.getLeftTriggerAxis() - (0.35 if self.stick.getHID().getLeftBumper() else 0)
 
     def climber(self) -> float:
         return deadband(self.stick.getLeftY(), 0.05)
@@ -305,11 +306,11 @@ class DanielXboxOperator(OperatorActionSet):
 
     @property
     def speaker_height(self) -> Trigger:
-        return Trigger()
+        return self.stick.a()
 
     @property
     def amp_height(self) -> Trigger:
-        return self.stick.a()
+        return Trigger()
 
 
 def deadband(value, band):

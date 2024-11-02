@@ -97,6 +97,9 @@ class RobotContainer:
 
         self.auto_chooser.addOption("Do Nothing", commands2.Command())
 
+        def shoot(power: float):
+            self.shooter.run_flywheel_power(power)
+            self.shooter.run_conveyor_power(power)
         score_preload_speaker_auto = commands2.ParallelCommandGroup(
             self.swerve.teleop_command(
                 lambda: 0,
@@ -113,7 +116,9 @@ class RobotContainer:
             commands2.RunCommand(
                 lambda: self.shooter.run_flywheel_power(1),
                 self.shooter,
-            ).finallyDo(lambda _: self.shooter.run_flywheel_power(0)).withTimeout(1)
+            ).alongWith(commands2.RunCommand(
+                lambda: self.shooter.run_conveyor_power(1),
+            )).finallyDo(lambda _: self.shooter.run_flywheel_power(0)).withTimeout(1)
         )
         self.auto_chooser.addOption("Score Speaker [WIP]", score_preload_speaker_auto)
 
@@ -208,9 +213,9 @@ class RobotContainer:
             self.shooter.shooter_angle_command(AutoConstants.SPEAKER_SCORING_ANGLE)
         )
         # Go to amp scoring angle
-        self.operator_stick.amp_height.whileTrue(
-            self.shooter.shooter_angle_command(AutoConstants.AMP_SCORING_ANGLE)
-        )
+        # self.operator_stick.amp_height.whileTrue(
+        #     self.shooter.shooter_angle_command(AutoConstants.AMP_SCORING_ANGLE)
+        # )
 
     def look_with_shooter(self, target: Translation2d):
         # Return a percentage from -1 to 1 that may be used in lieu of a joystick turning input.

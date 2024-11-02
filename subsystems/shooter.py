@@ -87,9 +87,9 @@ class Shooter(commands2.Subsystem):
         self._pivot_encoder.setInverted(ShooterConstants.INVERT_PIVOT_ENCODER)
         self._pivot_encoder.setZeroOffset(ShooterConstants.PIVOT_OFFSET)
 
-        self._pivot_controller.setPositionPIDWrappingEnabled(True)
-        self._pivot_controller.setPositionPIDWrappingMaxInput(360)
-        self._pivot_controller.setPositionPIDWrappingMinInput(0)
+        self._pivot_controller.setPositionPIDWrappingEnabled(False)
+        # self._pivot_controller.setPositionPIDWrappingMaxInput(360)
+        # self._pivot_controller.setPositionPIDWrappingMinInput(0)
 
         # self._pivot_motor.enableSoftLimit(rev.CANSparkMax.SoftLimitDirection.kForward, False)
         # self._pivot_motor.setSoftLimit(rev.CANSparkMax.SoftLimitDirection.kForward, ShooterConstants.PIVOT_FORWARD_LIMIT)
