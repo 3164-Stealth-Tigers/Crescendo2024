@@ -94,7 +94,7 @@ class IntakeConstants:
 
 
 class ClimberConstants:
-    MOTOR_ID = 14
+    MOTOR_ID = 16
 
     CLIMBER_SPEED = 0
 
@@ -106,15 +106,22 @@ class ClimberConstants:
 
 
 class ShooterConstants:
-    FLYWHEEL_LEFT_MOTOR_ID = 13
-    FLYWHEEL_RIGHT_MOTOR_ID = 12
+    FLYWHEEL_RIGHT_MOTOR_ID = 15
+    FLYWHEEL_LEFT_MOTOR_ID = 14
+    CONVEYOR_LEFT_MOTOR_ID = 13
+    CONVEYOR_RIGHT_MOTOR_ID = 12
     PIVOT_MOTOR_ID = 11
 
     INVERT_LEFT_FLYWHEEL = True
     INVERT_RIGHT_FLYWHEEL = False
+    INVERT_LEFT_CONVEYOR = True
+    INVERT_RIGHT_CONVEYOR = False
 
     FLYWHEEL_GEAR_RATIO = 3 / 1
-    LARGE_WHEEL_CIRCUMFERENCE = (3 * u.inch).m_as(u.m)
+    FLYWHEEL_CIRCUMFERENCE = (3 * u.inch).m_as(u.m)
+
+    CONVEYOR_GEAR_RATIO = 5 / 1
+    CONVEYOR_WHEEL_CIRCUMFERENCE = (3 * u.inch).m_as(u.m)
 
     FLYWHEEL_kS = 0
     FLYWHEEL_kV = 0
@@ -125,7 +132,7 @@ class ShooterConstants:
     PIVOT_kP = 0.02
 
     # Offset so the shooter angle is 10 at vertical
-    PIVOT_OFFSET = 61.779743 - 10  # Degrees
+    PIVOT_OFFSET = 31.932662963867188  # Degrees
     INVERT_PIVOT_ENCODER = False
     INVERT_PIVOT_MOTOR = True
 

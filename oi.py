@@ -84,6 +84,10 @@ class OperatorActionSet(Protocol):
         raise NotImplementedError
 
     @abstractmethod
+    def conveyor(self) -> float:
+        raise NotImplementedError
+
+    @abstractmethod
     def intake(self) -> float:
         raise NotImplementedError
 
@@ -122,17 +126,17 @@ class XboxDriver(DriverActionSet):
 
     def forward(self) -> float:
         """The robot's movement along the X axis, controlled by moving the left joystick up and down. From -1 to 1"""
-        return deadband(-self.stick.getLeftY(), 0.08)
+        return deadband(-self.stick.getLeftY(), 0.08) * 0.5
 
     def strafe(self) -> float:
         """The robot's movement along the Y axis, controlled by moving the left joystick left and right. From -1 to 1"""
-        return deadband(-self.stick.getLeftX(), 0.08)
+        return deadband(-self.stick.getLeftX(), 0.08) * 0.5
 
     def turn(self) -> float:
         """The robot's movement around the Z axis, controlled by moving the right joystick left and right.
         From -1 to 1, CCW+
         """
-        return deadband(-self.stick.getRightX(), 0.08) * 0.6
+        return deadband(-self.stick.getRightX(), 0.08) * 0.3
 
     @property
     def reset_gyro(self) -> Trigger:
@@ -280,8 +284,11 @@ class DanielXboxOperator(OperatorActionSet):
         """
         self.stick = CommandXboxController(port)
 
+    def conveyor(self) -> float:
+        return self.stick.getRightTriggerAxis() - (0.3 if self.stick.getHID().getBButton() else 0)
+
     def flywheel(self) -> float:
-        return 1 if self.stick.getHID().getXButton() else -0.15 if self.stick.getHID().getRightBumper() else self.stick.getRightTriggerAxis() * 0.5
+        return 1 if self.stick.getHID().getXButton() else 0
 
     def pivot(self) -> float:
         return deadband(-self.stick.getRightY() * 0.3, 0.05)

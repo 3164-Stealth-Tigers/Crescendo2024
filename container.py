@@ -60,7 +60,11 @@ class RobotContainer:
         self.shooter = Shooter()
         shooter_command = commands2.RunCommand(
             lambda: self.shooter.run_flywheel_power(self.operator_stick.flywheel())
-        ).alongWith(commands2.RunCommand(lambda: self.shooter.run_pivot_power(self.operator_stick.pivot())))
+        ).alongWith(
+            commands2.RunCommand(lambda: self.shooter.run_pivot_power(self.operator_stick.pivot()))
+        ).alongWith(
+            commands2.RunCommand(lambda: self.shooter.run_conveyor_power(self.operator_stick.conveyor() + self.operator_stick.intake()))
+        )
         shooter_command.addRequirements(self.shooter)
         self.shooter.setDefaultCommand(shooter_command)
         wpilib.SmartDashboard.putData(self.shooter)
