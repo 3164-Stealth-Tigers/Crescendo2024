@@ -147,6 +147,14 @@ class RobotContainer:
         )
         self.auto_chooser.addOption("Score Amp", score_amp_auto)
 
+        test_traj_auto = self.swerve.follow_trajectory_command(
+            PathPlannerPath.fromPathFile("Test"),
+            AutoConstants.TRAJECTORY_PARAMS,
+            True,
+            True,
+        )
+        self.auto_chooser.addOption("Test Trajectory", test_traj_auto)
+
     def get_autonomous_command(self):
         return self.auto_chooser.getSelected()
 
