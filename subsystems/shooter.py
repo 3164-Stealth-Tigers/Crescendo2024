@@ -20,10 +20,10 @@ class Shooter(commands2.Subsystem):
         self._conveyor_encoder = self._conveyor_motor_left.getEncoder()
         #self._conveyor_controller = self._conveyor_motor_left.getClosedLoopController()
 
-        conveyor_settings = rev.EncoderConfig()
+        conveyor_settings = rev.SparkMaxConfig()
 
         conveyor_settings.smartCurrentLimit(60)
-        conveyor_settings.setIdleMode(rev.SparkBase.IdleMode.kCoast)
+        conveyor_settings.setIdleMode(rev.SparkBaseConfig.IdleMode.kCoast)
 
         # Convert from rpm to metres/sec with a gear ratio
         conveyor_settings.encoder.velocityConversionFactor(
@@ -56,13 +56,13 @@ class Shooter(commands2.Subsystem):
 
         flywheel_settings.encoder.velocityConversionFactor(math.pi * 3)
         flywheel_settings.smartCurrentLimit(60, 100)
-        flywheel_settings.setIdleMode(rev.SparkBase.IdleMode.kCoast)
+        flywheel_settings.setIdleMode(rev.SparkBaseConfig.IdleMode.kCoast)
 
         flywheel_settings.inverted(ShooterConstants.INVERT_LEFT_FLYWHEEL)
         self._flywheel_motor_left.configure(flywheel_settings, rev.SparkBase.ResetMode.kResetSafeParameters, rev.SparkBase.PersistMode.kPersistParameters)
 
-        self._flywheel_motor_right = rev.CANSparkMax(
-            ShooterConstants.FLYWHEEL_RIGHT_MOTOR_ID, rev.CANSparkMax.MotorType.kBrushless
+        self._flywheel_motor_right = rev.SparkMax(
+            ShooterConstants.FLYWHEEL_RIGHT_MOTOR_ID, rev.SparkBase.MotorType.kBrushless
         )
         flywheel_settings.inverted(ShooterConstants.INVERT_RIGHT_FLYWHEEL)
         self._flywheel_motor_right.configure(flywheel_settings, rev.SparkBase.ResetMode.kResetSafeParameters, rev.SparkBase.PersistMode.kPersistParameters)

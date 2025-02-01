@@ -131,7 +131,6 @@ class RobotContainer:
                 PathPlannerPath.fromPathFile("Amp"),
                 AutoConstants.TRAJECTORY_PARAMS,
                 True,
-                True,
                 lambda: wpilib.DriverStation.getAlliance() is wpilib.DriverStation.Alliance.kRed,
             ),
             self.shooter.shooter_angle_command(AutoConstants.AMP_SCORING_ANGLE).withTimeout(2),
@@ -142,7 +141,10 @@ class RobotContainer:
         )
         self.auto_chooser.addOption("Score Amp", score_amp_auto)
 
-        test_traj_auto = AutoBuilder.followPath(PathPlannerPath.fromPathFile("Test"))
+        path = PathPlannerPath.fromPathFile("Test")
+        test_traj_auto = AutoBuilder.followPath(path).beforeStarting(
+            AutoBuilder.resetOdom(path.getStartingHolonomicPose())
+        )
         self.auto_chooser.addOption("Test Trajectory", test_traj_auto)
 
     def get_autonomous_command(self):
