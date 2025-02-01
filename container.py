@@ -2,8 +2,8 @@
 
 import commands2
 import wpilib
+from pathplannerlib.auto import AutoBuilder
 from pathplannerlib.path import PathPlannerPath
-from commands2.sysid import SysIdRoutine
 from wpimath.geometry import Rotation2d, Translation2d
 
 import limelight
@@ -36,6 +36,7 @@ class RobotContainer:
             swerve_components.GYRO,
             SwerveConstants.MAX_SPEED,
             SwerveConstants.MAX_ANGULAR_SPEED,
+            AutoConstants.TRAJECTORY_PARAMS,
             limelight.get_estimated_pose,
         )
 
@@ -122,13 +123,7 @@ class RobotContainer:
         )
         self.auto_chooser.addOption("Score Speaker [WIP]", score_preload_speaker_auto)
 
-        setup_amp_auto = self.swerve.follow_trajectory_command(
-            PathPlannerPath.fromPathFile("Amp"),
-            AutoConstants.TRAJECTORY_PARAMS,
-            True,
-            True,
-            lambda: wpilib.DriverStation.getAlliance() is wpilib.DriverStation.Alliance.kRed,
-        )
+        setup_amp_auto = AutoBuilder.followPath(PathPlannerPath.fromPathFile("Amp"))
         self.auto_chooser.addOption("Amp Setup", setup_amp_auto)
 
         score_amp_auto = commands2.SequentialCommandGroup(
@@ -147,12 +142,7 @@ class RobotContainer:
         )
         self.auto_chooser.addOption("Score Amp", score_amp_auto)
 
-        test_traj_auto = self.swerve.follow_trajectory_command(
-            PathPlannerPath.fromPathFile("Test"),
-            AutoConstants.TRAJECTORY_PARAMS,
-            True,
-            True,
-        )
+        test_traj_auto = AutoBuilder.followPath(PathPlannerPath.fromPathFile("Test"))
         self.auto_chooser.addOption("Test Trajectory", test_traj_auto)
 
     def get_autonomous_command(self):
@@ -268,4 +258,3 @@ class RobotContainer:
             speaker_pos = FieldConstants.BLUE_SPEAKER_POSITION
 
         return self.look_with_shooter(speaker_pos)
-

@@ -14,80 +14,84 @@ class Shooter(commands2.Subsystem):
     def __init__(self):
         super().__init__()
 
-        self._conveyor_motor_left = rev.CANSparkMax(
-            ShooterConstants.CONVEYOR_LEFT_MOTOR_ID, rev.CANSparkMax.MotorType.kBrushless
+        self._conveyor_motor_left = rev.SparkMax(
+            ShooterConstants.CONVEYOR_LEFT_MOTOR_ID, rev.SparkBase.MotorType.kBrushless
         )
         self._conveyor_encoder = self._conveyor_motor_left.getEncoder()
-        self._conveyor_controller = self._conveyor_motor_left.getPIDController()
+        #self._conveyor_controller = self._conveyor_motor_left.getClosedLoopController()
 
-        self._conveyor_motor_left.restoreFactoryDefaults()
-        self._conveyor_motor_left.setSmartCurrentLimit(80)
-        self._conveyor_motor_left.setInverted(ShooterConstants.INVERT_LEFT_CONVEYOR)
-        self._conveyor_motor_left.setIdleMode(rev.CANSparkMax.IdleMode.kCoast)
+        conveyor_settings = rev.EncoderConfig()
+
+        conveyor_settings.smartCurrentLimit(60)
+        conveyor_settings.setIdleMode(rev.SparkBase.IdleMode.kCoast)
 
         # Convert from rpm to metres/sec with a gear ratio
-        self._conveyor_encoder.setVelocityConversionFactor(
+        conveyor_settings.encoder.velocityConversionFactor(
             ShooterConstants.FLYWHEEL_CIRCUMFERENCE / 60 / ShooterConstants.FLYWHEEL_GEAR_RATIO
         )
 
-        self._conveyor_controller.setFeedbackDevice(self._conveyor_encoder)
-        self._conveyor_controller.setP(ShooterConstants.FLYWHEEL_kP)
-        self._conveyor_controller.setD(ShooterConstants.FLYWHEEL_kD)
+        #self._conveyor_controller.setFeedbackDevice(self._conveyor_encoder)
+        #self._conveyor_controller.setP(ShooterConstants.FLYWHEEL_kP)
+        #self._conveyor_controller.setD(ShooterConstants.FLYWHEEL_kD)
 
-        self._conveyor_motor_right = rev.CANSparkMax(
-            ShooterConstants.CONVEYOR_RIGHT_MOTOR_ID, rev.CANSparkMax.MotorType.kBrushless
+        # Inversion for left motor; will need to be changed for right motor
+        conveyor_settings.inverted(ShooterConstants.INVERT_LEFT_CONVEYOR)
+
+        self._conveyor_motor_left.configure(conveyor_settings, rev.SparkBase.ResetMode.kResetSafeParameters, rev.SparkBase.PersistMode.kPersistParameters)
+
+        self._conveyor_motor_right = rev.SparkMax(
+            ShooterConstants.CONVEYOR_RIGHT_MOTOR_ID, rev.SparkBase.MotorType.kBrushless
         )
-        self._conveyor_motor_right.restoreFactoryDefaults()
-        self._conveyor_motor_right.setSmartCurrentLimit(80)
-        self._conveyor_motor_right.setInverted(ShooterConstants.INVERT_RIGHT_CONVEYOR)
-        self._conveyor_motor_right.setIdleMode(rev.CANSparkMax.IdleMode.kCoast)
+        conveyor_settings.inverted(ShooterConstants.INVERT_RIGHT_CONVEYOR)
+        self._conveyor_motor_right.configure(conveyor_settings, rev.SparkBase.ResetMode.kResetSafeParameters, rev.SparkBase.PersistMode.kPersistParameters)
 
         # Define flywheel motors
-        self._flywheel_motor_left = rev.CANSparkMax(
-            ShooterConstants.FLYWHEEL_LEFT_MOTOR_ID, rev.CANSparkMax.MotorType.kBrushless
+        self._flywheel_motor_left = rev.SparkMax(
+            ShooterConstants.FLYWHEEL_LEFT_MOTOR_ID, rev.SparkBase.MotorType.kBrushless
         )
         self._flywheel_encoder = self._flywheel_motor_left.getEncoder()
-        self._flywheel_controller = self._flywheel_motor_left.getPIDController()
+        #self._flywheel_controller = self._flywheel_motor_left.getPIDController()
 
-        self._flywheel_encoder.setVelocityConversionFactor(math.pi * 3)
+        flywheel_settings = rev.SparkMaxConfig()
 
-        self._flywheel_motor_left.restoreFactoryDefaults()
-        self._flywheel_motor_left.setSmartCurrentLimit(80)
-        self._flywheel_motor_left.setInverted(ShooterConstants.INVERT_LEFT_FLYWHEEL)
-        self._flywheel_motor_left.setIdleMode(rev.CANSparkMax.IdleMode.kCoast)
+        flywheel_settings.encoder.velocityConversionFactor(math.pi * 3)
+        flywheel_settings.smartCurrentLimit(60, 100)
+        flywheel_settings.setIdleMode(rev.SparkBase.IdleMode.kCoast)
+
+        flywheel_settings.inverted(ShooterConstants.INVERT_LEFT_FLYWHEEL)
+        self._flywheel_motor_left.configure(flywheel_settings, rev.SparkBase.ResetMode.kResetSafeParameters, rev.SparkBase.PersistMode.kPersistParameters)
 
         self._flywheel_motor_right = rev.CANSparkMax(
             ShooterConstants.FLYWHEEL_RIGHT_MOTOR_ID, rev.CANSparkMax.MotorType.kBrushless
         )
-
-        self._flywheel_motor_right.restoreFactoryDefaults()
-        self._flywheel_motor_right.setSmartCurrentLimit(80)
-        self._flywheel_motor_right.setInverted(ShooterConstants.INVERT_RIGHT_FLYWHEEL)
-        self._flywheel_motor_right.setIdleMode(rev.CANSparkMax.IdleMode.kCoast)
+        flywheel_settings.inverted(ShooterConstants.INVERT_RIGHT_FLYWHEEL)
+        self._flywheel_motor_right.configure(flywheel_settings, rev.SparkBase.ResetMode.kResetSafeParameters, rev.SparkBase.PersistMode.kPersistParameters)
 
         self._flywheel_feedforward = wpimath.controller.SimpleMotorFeedforwardMeters(
             ShooterConstants.FLYWHEEL_kS, ShooterConstants.FLYWHEEL_kV
         )
 
-        self._pivot_motor = rev.CANSparkMax(ShooterConstants.PIVOT_MOTOR_ID, rev.CANSparkMax.MotorType.kBrushless)
-        self._pivot_encoder = self._pivot_motor.getAbsoluteEncoder(rev.SparkAbsoluteEncoder.Type.kDutyCycle)
-        self._pivot_controller = self._pivot_motor.getPIDController()
+        self._pivot_motor = rev.SparkMax(ShooterConstants.PIVOT_MOTOR_ID, rev.SparkBase.MotorType.kBrushless)
+        self._pivot_encoder = self._pivot_motor.getAbsoluteEncoder()
+        #self._pivot_controller = self._pivot_motor.getPIDController()
 
-        self._pivot_motor.restoreFactoryDefaults()
-        self._pivot_motor.setInverted(ShooterConstants.INVERT_PIVOT_MOTOR)
-        self._pivot_controller.setFeedbackDevice(self._pivot_encoder)
-        self._pivot_controller.setP(ShooterConstants.PIVOT_kP)
-        self._pivot_controller.setD(ShooterConstants.PIVOT_kD)
+        pivot_settings = rev.SparkMaxConfig()
 
-        self._pivot_motor.setSmartCurrentLimit(60)
-        self._pivot_motor.setSecondaryCurrentLimit(70)
+        pivot_settings.inverted(ShooterConstants.INVERT_PIVOT_MOTOR)
+        #self._pivot_controller.setFeedbackDevice(self._pivot_encoder)
+        #self._pivot_controller.setP(ShooterConstants.PIVOT_kP)
+        #self._pivot_controller.setD(ShooterConstants.PIVOT_kD)
+
+        pivot_settings.smartCurrentLimit(60)
 
         # Position conversion factor and inversion MUST be set before zero offset
-        self._pivot_encoder.setPositionConversionFactor(360)
-        self._pivot_encoder.setInverted(ShooterConstants.INVERT_PIVOT_ENCODER)
-        self._pivot_encoder.setZeroOffset(ShooterConstants.PIVOT_OFFSET)
+        pivot_settings.absoluteEncoder.positionConversionFactor(360)
+        pivot_settings.absoluteEncoder.inverted(ShooterConstants.INVERT_PIVOT_ENCODER)
+        pivot_settings.absoluteEncoder.zeroOffset(ShooterConstants.PIVOT_OFFSET)
 
-        self._pivot_controller.setPositionPIDWrappingEnabled(False)
+        self._pivot_motor.configure(pivot_settings, rev.SparkBase.ResetMode.kResetSafeParameters, rev.SparkBase.PersistMode.kPersistParameters)
+
+        #self._pivot_controller.setPositionPIDWrappingEnabled(False)
         # self._pivot_controller.setPositionPIDWrappingMaxInput(360)
         # self._pivot_controller.setPositionPIDWrappingMinInput(0)
 
@@ -110,7 +114,8 @@ class Shooter(commands2.Subsystem):
 
         :param angle: The angle above horizontal
         """
-        self._pivot_controller.setReference(angle.degrees(), rev.CANSparkMax.ControlType.kPosition)
+        # TODO
+        #self._pivot_controller.setReference(angle.degrees(), rev.CANSparkMax.ControlType.kPosition)
 
     def run_pivot_power(self, power: float):
         self._pivot_motor.set(power)

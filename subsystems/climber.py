@@ -19,21 +19,21 @@ class Climber(commands2.Subsystem):
     def __init__(self):
         super().__init__()
 
-        self._motor = rev.CANSparkMax(ClimberConstants.MOTOR_ID, rev.CANSparkMax.MotorType.kBrushless)
+        self._motor = rev.SparkMax(ClimberConstants.MOTOR_ID, rev.SparkBase.MotorType.kBrushless)
         self._encoder = self._motor.getEncoder()
-        self._controller = self._motor.getPIDController()
+        self._controller = self._motor.getClosedLoopController()
 
         # Setup limits
         # Hard limit switch on the bottom
-        self._bottom_limit = self._motor.getForwardLimitSwitch(ClimberConstants.BOTTOM_LIMIT_SWITCH_TYPE)
-        self._bottom_limit.enableLimitSwitch(True)
+        #self._bottom_limit = self._motor.getForwardLimitSwitch(ClimberConstants.BOTTOM_LIMIT_SWITCH_TYPE)
+        #self._bottom_limit.enableLimitSwitch(True)
 
+        settings = rev.SparkMaxConfig()
         # Convert from rotations to metres with a gear ratio
-        self._encoder.setPositionConversionFactor(ClimberConstants.SPOOL_CIRCUMFERENCE / ClimberConstants.GEAR_RATIO)
+        settings.encoder.positionConversionFactor(ClimberConstants.SPOOL_CIRCUMFERENCE / ClimberConstants.GEAR_RATIO)
         # Convert from rpm to metres/sec
-        self._encoder.setVelocityConversionFactor(
-            ClimberConstants.SPOOL_CIRCUMFERENCE / ClimberConstants.GEAR_RATIO / 60
-        )
+        settings.encoder.positionConversionFactor(ClimberConstants.SPOOL_CIRCUMFERENCE / ClimberConstants.GEAR_RATIO / 60)
+        self._motor.configure(settings, rev.SparkBase.ResetMode.kNoResetSafeParameters, rev.SparkBase.PersistMode.kNoPersistParameters)
 
         self._feedforward = wpimath.controller.SimpleMotorFeedforwardMeters(
             ClimberConstants.CLIMBER_kS, ClimberConstants.CLIMBER_kV
@@ -51,7 +51,7 @@ class Climber(commands2.Subsystem):
         """
         velocity = ClimberConstants.CLIMBER_SPEED * (1 if direction is Direction.UP else -1)
         ff = self._feedforward.calculate(velocity)
-        self._controller.setReference(velocity, rev.CANSparkMax.ControlType.kVelocity, arbFeedforward=ff)
+        self._controller.setReference(velocity, rev.SparkBase.ControlType.kVelocity, arbFeedforward=ff)
 
     def zero_position(self):
         self._encoder.setPosition(0)
@@ -67,5 +67,6 @@ class Climber(commands2.Subsystem):
         DOWN designates that the climber is at dead bottom.
         None designates that the climber hasn't hit a limit.
         """
-        if self._bottom_limit.get():
-            return Direction.UP
+        #if self._bottom_limit.get():
+        #    return Direction.UP
+        return None

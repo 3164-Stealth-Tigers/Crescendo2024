@@ -10,6 +10,9 @@ from swervepy.impl import (
     Pigeon2Gyro,
     AbsoluteCANCoder,
     CoaxialSwerveModule,
+    TypicalDriveComponentParameters,
+    TypicalAzimuthComponentParameters,
+    NeutralMode,
 )
 
 from .constants import SwerveConstants
@@ -19,7 +22,7 @@ STEERING_COMPONENT_CLASS = Falcon500CoaxialAzimuthComponent
 GYRO_CLASS = Pigeon2Gyro
 ABSOLUTE_ENCODER_CLASS = AbsoluteCANCoder
 
-FRONT_DRIVE_COMPONENT_PARAMS = DRIVE_COMPONENT_CLASS.Parameters(
+FRONT_DRIVE_COMPONENT_PARAMS = TypicalDriveComponentParameters(
     wheel_circumference=SwerveConstants.WHEEL_CIRCUMFERENCE,
     gear_ratio=SwerveConstants.DRIVE_GEAR_RATIO,
     max_speed=SwerveConstants.MAX_SPEED,
@@ -28,7 +31,7 @@ FRONT_DRIVE_COMPONENT_PARAMS = DRIVE_COMPONENT_CLASS.Parameters(
     continuous_current_limit=SwerveConstants.DRIVE_CONTINUOUS_CURRENT_LIMIT,
     peak_current_limit=SwerveConstants.DRIVE_PEAK_CURRENT_LIMIT,
     peak_current_duration=0.1,
-    neutral_mode=phoenix5.NeutralMode.Coast,
+    neutral_mode=NeutralMode.COAST,
     kP=SwerveConstants.DRIVE_kP,
     kI=0,
     kD=0,
@@ -37,14 +40,14 @@ FRONT_DRIVE_COMPONENT_PARAMS = DRIVE_COMPONENT_CLASS.Parameters(
     kA=SwerveConstants.DRIVE_kA,
     invert_motor=SwerveConstants.FRONT_DRIVE_MOTOR_INVERTED,
 )
-FRONT_STEERING_COMPONENT_PARAMS = STEERING_COMPONENT_CLASS.Parameters(
+FRONT_STEERING_COMPONENT_PARAMS = TypicalAzimuthComponentParameters(
     gear_ratio=SwerveConstants.STEERING_GEAR_RATIO,
     max_angular_velocity=SwerveConstants.MAX_ANGULAR_SPEED,
     ramp_rate=0,
     continuous_current_limit=SwerveConstants.STEERING_CONTINUOUS_CURRENT_LIMIT,
     peak_current_limit=SwerveConstants.STEERING_PEAK_CURRENT_LIMIT,
     peak_current_duration=0.1,
-    neutral_mode=phoenix5.NeutralMode.Brake,
+    neutral_mode=NeutralMode.BRAKE,
     kP=SwerveConstants.STEERING_kP,
     kI=0,
     kD=0,

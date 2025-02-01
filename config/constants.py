@@ -102,7 +102,7 @@ class ClimberConstants:
     CLIMBER_kS = 0
     GEAR_RATIO = 15
     SPOOL_CIRCUMFERENCE = 0
-    BOTTOM_LIMIT_SWITCH_TYPE = rev.SparkLimitSwitch.Type.kNormallyOpen
+    #BOTTOM_LIMIT_SWITCH_TYPE = rev.SparkLimitSwitch.Type.kNormallyOpen
 
 
 class ShooterConstants:
@@ -146,9 +146,9 @@ class AutoConstants:
     LINEAR_POSITION_kP = 1  # m/s per metre of error
 
     TRAJECTORY_PARAMS = TrajectoryFollowerParameters(
-        SwerveConstants.MAX_SPEED,
         ANGULAR_POSITION_kP,
         LINEAR_POSITION_kP,
+        True,
     )
 
     # Shooter Angles
